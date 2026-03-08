@@ -62,11 +62,16 @@ export default function Option({
 			/>,
 		);
 	} else if (InputCompnent) {
+		const resolvedInputProps =
+			type === "number" && inputProps?.width === undefined
+				? { ...inputProps, width: 48 }
+				: inputProps;
+
 		inputs.push(
 			<InputCompnent
 				key="input"
 				{...defaultProps}
-				{...inputProps}
+				{...resolvedInputProps}
 				{...otherProps}
 				name={name}
 				value={value}
