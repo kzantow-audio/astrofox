@@ -31,6 +31,7 @@ const initialState = {
 	isBottomPanelVisible: true,
 	isRightPanelVisible: true,
 	isVideoRecording: false,
+	videoExportSegment: null,
 };
 
 const appStore = create(() => ({
@@ -209,6 +210,33 @@ export async function saveVideo() {
 	);
 }
 
+export function setVideoExportSegment(startTime, endTime, totalDuration) {
+	if (!Number.isFinite(totalDuration) || totalDuration <= 0) {
+		appStore.setState({ videoExportSegment: null });
+		return;
+	}
+
+	const startPosition = Math.max(0, Math.min(1, startTime / totalDuration));
+	const endPosition = Math.max(0, Math.min(1, endTime / totalDuration));
+	const isFullDuration = startPosition <= 0 && endPosition >= 1;
+
+	if (endPosition <= startPosition || isFullDuration) {
+		appStore.setState({ videoExportSegment: null });
+		return;
+	}
+
+	appStore.setState({
+		videoExportSegment: {
+			startPosition,
+			endPosition,
+		},
+	});
+}
+
+export function clearVideoExportSegment() {
+	appStore.setState({ videoExportSegment: null });
+}
+
 export async function startVideoRecording({
 	fileHandle,
 	filePath,
@@ -305,7 +333,10 @@ export async function startVideoRecording({
 			}
 
 			activeVideoRecorder = null;
-			appStore.setState({ isVideoRecording: false });
+			appStore.setState({
+				isVideoRecording: false,
+				videoExportSegment: null,
+			});
 		};
 
 		recorder.ondataavailable = (event) => {

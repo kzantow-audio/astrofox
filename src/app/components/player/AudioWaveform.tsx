@@ -1,7 +1,7 @@
-import CanvasAudio from "@/lib/canvas/CanvasAudio";
 import useAppStore from "@/app/actions/app";
 import { player } from "@/app/global";
 import useSharedState from "@/app/hooks/useSharedState";
+import CanvasAudio from "@/lib/canvas/CanvasAudio";
 import classNames from "classnames";
 import type React from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -18,6 +18,7 @@ const canvasProperties = {
 
 export default function AudioWaveform() {
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
+	const videoExportSegment = useAppStore((state) => state.videoExportSegment);
 	const [state, setState] = useSharedState();
 	const { progressPosition, seekPosition } = state as {
 		progressPosition?: number;
@@ -87,6 +88,23 @@ export default function AudioWaveform() {
 
 	function handleMouseOut() {
 		setState({ seekPosition: 0 });
+	}
+
+	function handleKeyDown(e: React.KeyboardEvent<HTMLCanvasElement>) {
+		if (isVideoRecording || !hasAudio) {
+			return;
+		}
+
+		if (e.key !== "Enter" && e.key !== " ") {
+			return;
+		}
+
+		e.preventDefault();
+
+		const nextPosition = seekPosition ?? progressPosition ?? 0;
+
+		player.seek(nextPosition);
+		setState({ progressPosition: nextPosition, seekPosition: 0 });
 	}
 
 	function drawWaveform() {
@@ -188,19 +206,38 @@ export default function AudioWaveform() {
 				"hidden max-h-0 transition-[max-height_0.2s_ease-in]": !hasAudio,
 			})}
 		>
-			<canvas
-				ref={canvas}
-				className={classNames("mt-5 mx-auto block", {
-					"cursor-pointer": hasAudio && !isVideoRecording,
-					"cursor-default": !hasAudio || isVideoRecording,
-				})}
-				width={width}
-				height={height + shadowHeight}
-				onClick={handleClick}
-				onMouseMove={handleMouseMove}
-				onMouseOut={handleMouseOut}
-				onBlur={handleMouseOut}
-			/>
+			<div
+				className="relative mx-auto mt-5"
+				style={{ width, height: height + shadowHeight }}
+			>
+				{videoExportSegment ? (
+					<div
+						className="pointer-events-none absolute top-0 z-10 h-[70px] bg-primary/50"
+						style={{
+							left: `${videoExportSegment.startPosition * 100}%`,
+							width: `${(videoExportSegment.endPosition - videoExportSegment.startPosition) * 100}%`,
+						}}
+					/>
+				) : null}
+				<canvas
+					ref={canvas}
+					className={classNames("block", {
+						"cursor-pointer": hasAudio && !isVideoRecording,
+						"cursor-default": !hasAudio || isVideoRecording,
+					})}
+					tabIndex={hasAudio && !isVideoRecording ? 0 : -1}
+					role="button"
+					aria-disabled={!hasAudio || isVideoRecording}
+					aria-label="Audio waveform seek bar"
+					width={width}
+					height={height + shadowHeight}
+					onClick={handleClick}
+					onKeyDown={handleKeyDown}
+					onMouseMove={handleMouseMove}
+					onMouseOut={handleMouseOut}
+					onBlur={handleMouseOut}
+				/>
+			</div>
 			<div className="h-5" />
 		</div>
 	);
