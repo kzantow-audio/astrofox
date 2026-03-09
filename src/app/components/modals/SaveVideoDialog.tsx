@@ -36,9 +36,7 @@ export default function SaveVideoDialog({
 	includeAudio = true,
 }: SaveVideoDialogProps) {
 	const [fileHandle, setFileHandle] = useState(initialFileHandle);
-	const [filePath, setFilePath] = useState(
-		initialFilePath || initialDefaultPath,
-	);
+	const [filePath, setFilePath] = useState(initialFilePath);
 	const [selectedStartTime, setSelectedStartTime] = useState(startTime);
 	const [selectedEndTime, setSelectedEndTime] = useState(endTime);
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState(includeAudio);
@@ -139,13 +137,13 @@ export default function SaveVideoDialog({
 							disabled={isSubmitting || isChoosingLocation}
 							onClick={handleChooseLocation}
 						>
-							{isChoosingLocation ? "Choosing..." : "Change"}
+							{isChoosingLocation ? "Choosing..." : "Choose"}
 						</Button>
 					</div>
 					<input
 						type="text"
 						readOnly
-						value={filePath || initialDefaultPath}
+						value={filePath}
 						className="w-full rounded border border-border-input bg-neutral-900 px-3 py-2 font-mono text-xs text-neutral-300 outline-none"
 					/>
 				</section>
@@ -164,10 +162,10 @@ export default function SaveVideoDialog({
 						</p>
 					</div>
 					<div className="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
-						<div className="space-y-1.5">
+						<div className="flex flex-col gap-3.5">
 							<label
 								htmlFor="video-export-start-time"
-								className="text-xs uppercase tracking-wide text-neutral-400"
+								className="block text-xs uppercase tracking-wide text-neutral-400"
 							>
 								Start
 							</label>
@@ -180,10 +178,10 @@ export default function SaveVideoDialog({
 								onChange={(_name, value) => setSelectedStartTime(value)}
 							/>
 						</div>
-						<div className="space-y-1.5">
+						<div className="flex flex-col gap-3.5">
 							<label
 								htmlFor="video-export-end-time"
-								className="text-xs uppercase tracking-wide text-neutral-400"
+								className="block text-xs uppercase tracking-wide text-neutral-400"
 							>
 								End
 							</label>
@@ -202,25 +200,17 @@ export default function SaveVideoDialog({
 					</p>
 				</section>
 
-				<section className="space-y-3">
-					<div>
-						<h3 className="text-sm font-medium text-neutral-100">
-							Include audio
-						</h3>
-						<p className="text-xs text-neutral-400">
-							Turn this off to export the visuals without an audio track.
-						</p>
-					</div>
-					<div className="flex items-center justify-between rounded border border-neutral-700 bg-neutral-900/70 px-3 py-2.5">
+				<section className="space-y-2">
+					<div className="flex items-center justify-between gap-4 py-1">
 						<div>
 							<label
 								htmlFor="video-export-include-audio"
 								className="text-sm text-neutral-100"
 							>
-								Embed audio track
+								Include audio
 							</label>
 							<div className="text-xs text-neutral-400">
-								Visuals still render from the selected song segment.
+								Turn this off to export the visuals without an audio track.
 							</div>
 						</div>
 						<Switch

@@ -35,15 +35,32 @@ import React, { useEffect, useRef, useState } from "react";
 
 const NAV_LABELS = ["File", "Edit"];
 
-function cloneSubmenu(items = []) {
-	return items.map((item) => ({ ...item }));
+function createMenuItemKey(item, sectionLabel, index) {
+	if (item.key) {
+		return item.key;
+	}
+
+	const base =
+		item.action ||
+		item.label?.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
+		item.type ||
+		"item";
+
+	return `${sectionLabel.toLowerCase()}-${base}-${index}`;
+}
+
+function cloneSubmenu(items = [], sectionLabel = "menu") {
+	return items.map((item, index) => ({
+		...item,
+		key: createMenuItemKey(item, sectionLabel, index),
+	}));
 }
 
 function createMenuItems() {
 	const merged = menuConfig
 		.filter((item) => NAV_LABELS.includes(item.label) && !item.hidden)
 		.flatMap((item, index) => {
-			const submenu = cloneSubmenu(item.submenu);
+			const submenu = cloneSubmenu(item.submenu, item.label);
 			if (index === 0) {
 				return submenu;
 			}
@@ -247,7 +264,7 @@ export default function TitleBar() {
 							if (item.checked !== undefined) {
 								return (
 									<DropdownMenuCheckboxItem
-										key={item.label}
+										key={item.key}
 										checked={item.checked}
 										disabled={isMenuItemDisabled(item)}
 										className="text-sm min-w-44 rounded focus:text-neutral-100 focus:bg-primary"
@@ -260,7 +277,7 @@ export default function TitleBar() {
 
 							return (
 								<DropdownMenuItem
-									key={item.label}
+									key={item.key}
 									disabled={isMenuItemDisabled(item)}
 									className="text-sm min-w-44 rounded focus:text-neutral-100 focus:bg-primary"
 									onClick={() => onMenuItemClick(item)}
@@ -350,3 +367,4 @@ export default function TitleBar() {
 		</div>
 	);
 }
+

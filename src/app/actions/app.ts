@@ -188,20 +188,14 @@ export async function saveVideo() {
 		return;
 	}
 
-	const selection = await chooseVideoSaveLocation(undefined, setup.extension);
-
-	if (selection.canceled) {
-		return;
-	}
-
 	showModal(
 		"SaveVideoDialog",
 		{ title: "Save video" },
 		{
-			fileHandle: selection.fileHandle,
-			filePath: selection.filePath,
-			defaultPath: selection.defaultPath,
-			extension: selection.extension,
+			fileHandle: null,
+			filePath: "",
+			defaultPath: `video-${Date.now()}.${setup.extension}`,
+			extension: setup.extension,
 			totalDuration: setup.totalDuration,
 			startTime: 0,
 			endTime: setup.totalDuration,
