@@ -36,10 +36,15 @@ import { Vector2 } from "three";
 import { toRadians } from "../constants";
 
 function createBrightnessContrastRawEffect(props) {
-	return new RawBrightnessContrastEffect({
+	const effect = new RawBrightnessContrastEffect({
 		brightness: Number(props.brightness ?? 0),
 		contrast: Number(props.contrast ?? 0),
 	});
+	effect.__updateRawEffect = () => {
+		effect.brightness = Number(props.brightness ?? 0);
+		effect.contrast = Number(props.contrast ?? 0);
+	};
+	return effect;
 }
 
 function createColorAverageRawEffect() {
@@ -47,14 +52,23 @@ function createColorAverageRawEffect() {
 }
 
 function createColorDepthRawEffect(props) {
-	return new RawColorDepthEffect({ bits: Number(props.bits ?? 16) });
+	const effect = new RawColorDepthEffect({ bits: Number(props.bits ?? 16) });
+	effect.__updateRawEffect = () => {
+		effect.bitDepth = Number(props.bits ?? 16);
+	};
+	return effect;
 }
 
 function createHueSaturationRawEffect(props) {
-	return new RawHueSaturationEffect({
+	const effect = new RawHueSaturationEffect({
 		hue: toRadians(Number(props.hue ?? 0)),
 		saturation: Number(props.saturation ?? 0),
 	});
+	effect.__updateRawEffect = () => {
+		effect.hue = toRadians(Number(props.hue ?? 0));
+		effect.saturation = Number(props.saturation ?? 0);
+	};
+	return effect;
 }
 
 function createSepiaRawEffect(props) {
@@ -68,22 +82,21 @@ function createSepiaRawEffect(props) {
 }
 
 function createToneMappingRawEffect(props) {
-	const adaptive = Boolean(
-		props.toneMappingAdaptive ?? props.adaptive ?? false,
-	);
 	const effect = new RawToneMappingEffect({
-		mode: adaptive
-			? ToneMappingMode.REINHARD2_ADAPTIVE
-			: ToneMappingMode.REINHARD2,
+		mode:
+			(props.toneMappingAdaptive ?? props.adaptive ?? false)
+				? ToneMappingMode.REINHARD2_ADAPTIVE
+				: ToneMappingMode.REINHARD2,
 		middleGrey: Number(props.middleGrey ?? 0.6),
 		maxLuminance: Number(props.maxLuminance ?? 16),
 		averageLuminance: Number(props.averageLuminance ?? 1.0),
 		adaptationRate: Number(props.adaptationRate ?? 1.0),
 	});
 	effect.__updateRawEffect = () => {
-		effect.mode = adaptive
-			? ToneMappingMode.REINHARD2_ADAPTIVE
-			: ToneMappingMode.REINHARD2;
+		effect.mode =
+			(props.toneMappingAdaptive ?? props.adaptive ?? false)
+				? ToneMappingMode.REINHARD2_ADAPTIVE
+				: ToneMappingMode.REINHARD2;
 		effect.whitePoint = Number(props.maxLuminance ?? 16);
 		effect.middleGrey = Number(props.middleGrey ?? 0.6);
 		effect.averageLuminance = Number(props.averageLuminance ?? 1.0);
@@ -227,24 +240,15 @@ export function createRawEffect(effectConfig, width, height) {
 		case "ColorEffect": {
 			const colorEffects = [];
 
-			if (
-				Number(props.brightness ?? 0) !== 0 ||
-				Number(props.contrast ?? 0) !== 0
-			) {
-				colorEffects.push(createBrightnessContrastRawEffect(props));
-			}
+			colorEffects.push(createBrightnessContrastRawEffect(props));
 			if (props.colorAverageEnabled) {
 				colorEffects.push(createColorAverageRawEffect());
 			}
 			if (props.colorDepthEnabled) {
 				colorEffects.push(createColorDepthRawEffect(props));
 			}
-			if (Number(props.hue ?? 0) !== 0 || Number(props.saturation ?? 0) !== 0) {
-				colorEffects.push(createHueSaturationRawEffect(props));
-			}
-			if (Number(props.intensity ?? 0) !== 0) {
-				colorEffects.push(createSepiaRawEffect(props));
-			}
+			colorEffects.push(createHueSaturationRawEffect(props));
+			colorEffects.push(createSepiaRawEffect(props));
 			if (props.toneMappingEnabled) {
 				colorEffects.push(createToneMappingRawEffect(props));
 			}

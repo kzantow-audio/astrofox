@@ -20,10 +20,14 @@ import { createScenePass } from "./createScenePass";
 const LIVE_UPDATABLE_EFFECTS = new Set([
 	"BloomEffect",
 	"BlurEffect",
+	"BrightnessContrastEffect",
+	"ColorEffect",
 	"ColorHalftoneEffect",
+	"ColorDepthEffect",
 	"DistortionEffect",
 	"DotScreenEffect",
 	"GlitchEffect",
+	"HueSaturationEffect",
 	"KaleidoscopeEffect",
 	"LEDEffect",
 	"MirrorEffect",
@@ -31,10 +35,17 @@ const LIVE_UPDATABLE_EFFECTS = new Set([
 	"PerlinNoiseEffect",
 	"PixelateEffect",
 	"RGBShiftEffect",
+	"SepiaEffect",
+	"ToneMappingEffect",
 ]);
 
 const STRUCTURAL_EFFECT_PROPS = {
 	BlurEffect: ["type"],
+	ColorEffect: [
+		"colorAverageEnabled",
+		"colorDepthEnabled",
+		"toneMappingEnabled",
+	],
 	PixelateEffect: ["type"],
 };
 
