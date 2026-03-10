@@ -30,6 +30,7 @@ import {
 	SepiaEffect as RawSepiaEffect,
 	ToneMappingEffect as RawToneMappingEffect,
 	VignetteEffect as RawVignetteEffect,
+	ToneMappingMode,
 } from "postprocessing";
 import { Vector2 } from "three";
 import { toRadians } from "../constants";
@@ -67,12 +68,28 @@ function createSepiaRawEffect(props) {
 }
 
 function createToneMappingRawEffect(props) {
-	return new RawToneMappingEffect({
+	const adaptive = Boolean(
+		props.toneMappingAdaptive ?? props.adaptive ?? false,
+	);
+	const effect = new RawToneMappingEffect({
+		mode: adaptive
+			? ToneMappingMode.REINHARD2_ADAPTIVE
+			: ToneMappingMode.REINHARD2,
 		middleGrey: Number(props.middleGrey ?? 0.6),
 		maxLuminance: Number(props.maxLuminance ?? 16),
 		averageLuminance: Number(props.averageLuminance ?? 1.0),
 		adaptationRate: Number(props.adaptationRate ?? 1.0),
 	});
+	effect.__updateRawEffect = () => {
+		effect.mode = adaptive
+			? ToneMappingMode.REINHARD2_ADAPTIVE
+			: ToneMappingMode.REINHARD2;
+		effect.whitePoint = Number(props.maxLuminance ?? 16);
+		effect.middleGrey = Number(props.middleGrey ?? 0.6);
+		effect.averageLuminance = Number(props.averageLuminance ?? 1.0);
+		effect.adaptationRate = Number(props.adaptationRate ?? 1.0);
+	};
+	return effect;
 }
 
 export function createRawEffect(effectConfig, width, height) {

@@ -1,5 +1,8 @@
 import Effect from "@/lib/core/Effect";
 
+const isAdaptive = (display: { properties: Record<string, unknown> }) =>
+	Boolean(display.properties.adaptive);
+
 export default class ToneMappingEffect extends Effect {
 	static config = {
 		name: "ToneMappingEffect",
@@ -7,12 +10,17 @@ export default class ToneMappingEffect extends Effect {
 		type: "effect",
 		label: "Tone Mapping",
 		defaultProperties: {
+			adaptive: false,
 			middleGrey: 0.6,
 			maxLuminance: 16,
 			averageLuminance: 1.0,
 			adaptationRate: 1.0,
 		},
 		controls: {
+			adaptive: {
+				label: "Adaptive",
+				type: "toggle",
+			},
 			middleGrey: {
 				label: "Middle Grey",
 				type: "number",
@@ -36,6 +44,7 @@ export default class ToneMappingEffect extends Effect {
 				max: 10,
 				step: 0.01,
 				withRange: true,
+				hidden: isAdaptive,
 			},
 			adaptationRate: {
 				label: "Adaptation Rate",
@@ -44,6 +53,8 @@ export default class ToneMappingEffect extends Effect {
 				max: 10,
 				step: 0.01,
 				withRange: true,
+				hidden: (display: { properties: Record<string, unknown> }) =>
+					!isAdaptive(display),
 			},
 		},
 	};

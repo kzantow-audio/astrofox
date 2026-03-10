@@ -23,6 +23,7 @@ export default class ColorEffect extends Effect {
 			saturation: 0,
 			intensity: 0,
 			toneMappingEnabled: false,
+			toneMappingAdaptive: false,
 			middleGrey: 0.6,
 			maxLuminance: 16,
 			averageLuminance: 1.0,
@@ -96,6 +97,11 @@ export default class ColorEffect extends Effect {
 				label: "Tone Mapping",
 				type: "checkbox",
 			},
+			toneMappingAdaptive: {
+				label: "Adaptive",
+				type: "toggle",
+				hidden: isDisabled("toneMappingEnabled"),
+			},
 			middleGrey: {
 				label: "Middle Grey",
 				type: "number",
@@ -121,7 +127,9 @@ export default class ColorEffect extends Effect {
 				max: 10,
 				step: 0.01,
 				withRange: true,
-				hidden: isDisabled("toneMappingEnabled"),
+				hidden: (display: { properties: Record<string, unknown> }) =>
+					!display.properties.toneMappingEnabled ||
+					Boolean(display.properties.toneMappingAdaptive),
 			},
 			adaptationRate: {
 				label: "Adaptation Rate",
@@ -130,7 +138,9 @@ export default class ColorEffect extends Effect {
 				max: 10,
 				step: 0.01,
 				withRange: true,
-				hidden: isDisabled("toneMappingEnabled"),
+				hidden: (display: { properties: Record<string, unknown> }) =>
+					!display.properties.toneMappingEnabled ||
+					!display.properties.toneMappingAdaptive,
 			},
 		},
 	};
