@@ -2,20 +2,44 @@
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import React from "react";
 import {
+	DepthFormat,
+	DepthTexture,
 	HalfFloatType,
 	LinearFilter,
 	PerspectiveCamera,
 	RGBAFormat,
 	Scene as ThreeScene,
+	UnsignedIntType,
 	WebGLRenderTarget,
 } from "three";
+import ShaderPass from "../composer/ShaderPass";
+import DepthOfFieldShader from "../effects/shaders/DepthOfFieldShader";
 
 const PERSPECTIVE_FOV = 50;
+
+function createRenderTarget(width, height, withDepth = false) {
+	const target = new WebGLRenderTarget(width, height, {
+		minFilter: LinearFilter,
+		magFilter: LinearFilter,
+		format: RGBAFormat,
+		type: HalfFloatType,
+		depthBuffer: withDepth,
+		stencilBuffer: false,
+	});
+
+	if (withDepth) {
+		target.depthTexture = new DepthTexture(width, height, UnsignedIntType);
+		target.depthTexture.format = DepthFormat;
+	}
+
+	return target;
+}
 
 export function PerspectiveScene3D({
 	width,
 	height,
 	renderOrder = 0,
+	depthOfFieldEffect = null,
 	children,
 }) {
 	const gl = useThree((state) => state.gl);
@@ -45,33 +69,79 @@ export function PerspectiveScene3D({
 		perspCamera.updateProjectionMatrix();
 	}, [perspCamera, width, height, cameraZ]);
 
-	const fbo = React.useMemo(
-		() =>
-			new WebGLRenderTarget(width, height, {
-				minFilter: LinearFilter,
-				magFilter: LinearFilter,
-				format: RGBAFormat,
-				type: HalfFloatType,
-			}),
+	const colorTarget = React.useMemo(
+		() => createRenderTarget(width, height, true),
 		[],
 	);
+	const effectTarget = React.useMemo(
+		() => createRenderTarget(width, height, false),
+		[],
+	);
+	const dofPassRef = React.useRef(null);
+	const materialRef = React.useRef(null);
+
+	if (!dofPassRef.current) {
+		dofPassRef.current = new ShaderPass(DepthOfFieldShader);
+	}
 
 	React.useEffect(() => {
-		fbo.setSize(width, height);
-	}, [fbo, width, height]);
+		colorTarget.setSize(width, height);
+		effectTarget.setSize(width, height);
+		dofPassRef.current?.setSize(width, height);
+	}, [colorTarget, effectTarget, width, height]);
 
 	React.useEffect(() => {
 		return () => {
-			fbo.dispose();
+			colorTarget.dispose();
+			effectTarget.dispose();
+			dofPassRef.current?.dispose?.();
 		};
-	}, [fbo]);
+	}, [colorTarget, effectTarget]);
+
+	const dofProperties = depthOfFieldEffect?.properties || {};
+	const depthOfFieldEnabled =
+		!!depthOfFieldEffect && depthOfFieldEffect.enabled !== false;
+	const outputTexture =
+		depthOfFieldEnabled && colorTarget.depthTexture
+			? effectTarget.texture
+			: colorTarget.texture;
+
+	React.useEffect(() => {
+		const material = materialRef.current;
+		if (!material) {
+			return;
+		}
+
+		material.map = outputTexture;
+		material.needsUpdate = true;
+	}, [outputTexture]);
 
 	useFrame(() => {
 		const prevClearAlpha = gl.getClearAlpha();
 		gl.setClearAlpha(0);
-		gl.setRenderTarget(fbo);
+		gl.setRenderTarget(colorTarget);
 		gl.clear();
 		gl.render(perspScene, perspCamera);
+
+		if (depthOfFieldEnabled && colorTarget.depthTexture) {
+			const renderHeight = Math.max(
+				1,
+				Math.round(Number(dofProperties.height ?? height) || height),
+			);
+			const resolutionScale = Math.min(1, renderHeight / Math.max(1, height));
+
+			dofPassRef.current?.setUniforms({
+				depthTexture: colorTarget.depthTexture,
+				nearClip: perspCamera.near,
+				farClip: perspCamera.far,
+				focusDistance: Number(dofProperties.focusDistance ?? 0),
+				focalLength: Number(dofProperties.focalLength ?? 0.02),
+				bokehScale: Number(dofProperties.bokehScale ?? 2),
+				resolutionScale,
+			});
+			dofPassRef.current?.render(gl, colorTarget, effectTarget);
+		}
+
 		gl.setRenderTarget(null);
 		gl.setClearAlpha(prevClearAlpha);
 	}, -2);
@@ -82,7 +152,8 @@ export function PerspectiveScene3D({
 			<mesh renderOrder={renderOrder}>
 				<planeGeometry args={[width, height]} />
 				<meshBasicMaterial
-					map={fbo.texture}
+					ref={materialRef}
+					map={outputTexture}
 					transparent={true}
 					toneMapped={false}
 					depthTest={false}

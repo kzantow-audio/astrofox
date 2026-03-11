@@ -52,6 +52,12 @@ export default function HybridStageRoot({
 		}
 
 		const sceneEffects = (scene.effects || []).filter((e) => e?.enabled);
+		const depthOfFieldEffect =
+			sceneEffects.find((effect) => effect?.name === "DepthOfFieldEffect") ||
+			null;
+		const postEffects = sceneEffects.filter(
+			(effect) => effect?.name !== "DepthOfFieldEffect",
+		);
 		const scene2D = [];
 		const scene3D = [];
 		let scene3DOrder = order;
@@ -179,6 +185,7 @@ export default function HybridStageRoot({
 						width={width}
 						height={height}
 						renderOrder={scene3DOrder}
+						depthOfFieldEffect={depthOfFieldEffect}
 					>
 						{scene3D}
 					</PerspectiveScene3D>
@@ -195,7 +202,7 @@ export default function HybridStageRoot({
 				key={scene.id}
 				width={width}
 				height={height}
-				effects={sceneEffects}
+				effects={postEffects}
 				frameData={frameData}
 				outputToScreen={false}
 				onTexture={(texture) => {

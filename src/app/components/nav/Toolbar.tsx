@@ -52,7 +52,7 @@ const EFFECT_CATEGORIES = [
 	},
 	{
 		label: "Blur & Focus",
-		effects: ["Blur", "Bloom", "Tilt Shift"],
+		effects: ["Blur", "Bloom", "Depth of Field", "Tilt Shift"],
 	},
 	{
 		label: "Distortion",
