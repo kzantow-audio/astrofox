@@ -1,18 +1,7 @@
 // @ts-nocheck
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import {
-	EffectAttribute,
-	EffectPass,
-	Effect as RawEffect,
-	Pass as RawPass,
-} from "postprocessing";
 import React from "react";
-import {
-	Color,
-	HalfFloatType,
-	OrthographicCamera,
-	Scene as ThreeScene,
-} from "three";
+import { Color, OrthographicCamera, Scene as ThreeScene } from "three";
 import { PassChain } from "../PassChain";
 import { createRawEffect } from "./createRawEffect";
 import { createScenePass } from "./createScenePass";
@@ -132,43 +121,29 @@ export function SceneWithEffects({
 
 	React.useEffect(() => {
 		return () => {
-			chainRef.current?.dispose();
-		};
-	}, []);
-
-	React.useEffect(() => {
-		return () => {
 			onTextureRef.current?.(null);
+			chainRef.current?.dispose();
 		};
 	}, []);
 
 	// Rebuild passes when effect list or structural properties change
 	const effectKey = JSON.stringify(effects.map(getEffectBuildKey));
 	const passesRef = React.useRef([]);
-	const rawEffectsRef = React.useRef([]);
 	React.useEffect(() => {
 		const builtPasses = [];
-		const rawEffects = [];
-		const addEffectItem = (item) => {
+		const addPassItem = (item) => {
 			if (!item) {
 				return;
 			}
 
 			if (Array.isArray(item)) {
 				for (const child of item) {
-					addEffectItem(child);
+					addPassItem(child);
 				}
 				return;
 			}
 
-			if (item instanceof RawPass && !(item instanceof RawEffect)) {
-				builtPasses.push(item);
-				return;
-			}
-
-			if (item instanceof RawEffect) {
-				rawEffects.push(item);
-			}
+			builtPasses.push(item);
 		};
 
 		for (const effect of effects) {
@@ -195,47 +170,19 @@ export function SceneWithEffects({
 				continue;
 			}
 
-			addEffectItem(item);
+			addPassItem(item);
 		}
 
-		// CONVOLUTION effects cannot be merged into a single EffectPass — each
-		// needs its own pass. Non-convolution effects can share one EffectPass.
-		const convolutionEffects = rawEffects.filter(
-			(e) => (e.getAttributes() & EffectAttribute.CONVOLUTION) !== 0,
-		);
-		const otherEffects = rawEffects.filter(
-			(e) => (e.getAttributes() & EffectAttribute.CONVOLUTION) === 0,
-		);
-
-		for (const effect of convolutionEffects) {
-			try {
-				builtPasses.push(new EffectPass(camera, effect));
-			} catch {
-				// Effect pass failed to compile, skip
-			}
-		}
-		if (otherEffects.length > 0) {
-			try {
-				builtPasses.push(new EffectPass(camera, ...otherEffects));
-			} catch {
-				// Effect pass failed to compile, skip effects
-			}
-		}
-
-		// Initialize all passes (matching what EffectComposer.addPass does)
-		const alpha = gl.getContext().getContextAttributes()?.alpha ?? false;
 		for (const pass of builtPasses) {
 			try {
 				pass.setSize?.(width, height);
-				pass.initialize?.(gl, alpha, HalfFloatType);
 			} catch {
-				// Ignore initialization errors
+				// Ignore sizing errors and continue rendering with remaining passes.
 			}
 		}
 
 		const previousPasses = passesRef.current;
 		passesRef.current = builtPasses;
-		rawEffectsRef.current = rawEffects;
 		for (const pass of previousPasses) {
 			if (!builtPasses.includes(pass)) {
 				try {
@@ -259,13 +206,6 @@ export function SceneWithEffects({
 				pass.__updateScenePass?.(frameData);
 			} catch {
 				// Ignore live uniform update errors and continue rendering.
-			}
-		}
-		for (const effect of rawEffectsRef.current) {
-			try {
-				effect.__updateRawEffect?.(frameData);
-			} catch {
-				// Ignore live raw effect update errors and continue rendering.
 			}
 		}
 

@@ -64,7 +64,6 @@ const EFFECT_CATEGORIES = [
 			"ASCII",
 			"Color Halftone",
 			"Dot Screen",
-			"Grid",
 			"LED",
 			"Pixelate",
 			"Scanline",

@@ -19,6 +19,7 @@ export default class StageComposer {
 		this.inputBuffer = null;
 		this.outputBuffer = null;
 		this.dataBuffer = new Uint8Array(this.width * this.height * 4);
+		this.warmedUpRenderer = null;
 
 		this.setRenderer(renderer);
 	}
@@ -26,6 +27,7 @@ export default class StageComposer {
 	setRenderer(renderer) {
 		this.renderer = renderer;
 		if (!renderer) {
+			this.warmedUpRenderer = null;
 			return;
 		}
 
@@ -34,6 +36,11 @@ export default class StageComposer {
 		if (!this.inputBuffer || !this.outputBuffer) {
 			this.inputBuffer = createRenderTarget(this.width, this.height);
 			this.outputBuffer = createRenderTarget(this.width, this.height);
+		}
+
+		if (this.warmedUpRenderer !== renderer) {
+			this.warmUpPasses();
+			this.warmedUpRenderer = renderer;
 		}
 	}
 
@@ -117,6 +124,30 @@ export default class StageComposer {
 			alpha: 0,
 		});
 		this.copyPass.render(this.renderer, this.inputBuffer, this.outputBuffer);
+	}
+
+	warmUpPasses() {
+		if (!this.renderer || !this.inputBuffer || !this.outputBuffer) {
+			return;
+		}
+
+		this.blendPass.setUniforms({
+			baseBuffer: this.inputBuffer.texture,
+			blendBuffer: this.outputBuffer.texture,
+			mode: blendModes.Normal,
+			alpha: 1,
+			opacity: 1,
+			mask: 0,
+			inverse: 0,
+		});
+		this.copyPass.setUniforms({
+			inputTexture: this.inputBuffer.texture,
+			opacity: 1,
+			alpha: 0,
+		});
+
+		this.renderer.compile(this.blendPass.scene, this.blendPass.camera);
+		this.renderer.compile(this.copyPass.scene, this.copyPass.camera);
 	}
 
 	composeSceneLayers(sceneLayers, backgroundColor) {

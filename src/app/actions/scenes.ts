@@ -89,7 +89,9 @@ function findElementLocation(scenes, id) {
 	}
 
 	for (const scene of scenes) {
-		const displayIndex = scene.displays.findIndex((display) => display.id === id);
+		const displayIndex = scene.displays.findIndex(
+			(display) => display.id === id,
+		);
 		if (displayIndex > -1) {
 			return {
 				type: "display",

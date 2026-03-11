@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { Pass } from "postprocessing";
 import { Vector2 } from "three";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import Pass from "../../composer/Pass";
 
-export class PPUnrealBloomPass extends Pass {
+export default class UnrealBloomEffectPass extends Pass {
 	constructor({
 		width = 1,
 		height = 1,
@@ -12,7 +12,7 @@ export class PPUnrealBloomPass extends Pass {
 		radius = 0,
 		threshold = 0,
 	} = {}) {
-		super("PPUnrealBloomPass");
+		super();
 
 		this.unrealBloomPass = new UnrealBloomPass(
 			new Vector2(
@@ -23,15 +23,13 @@ export class PPUnrealBloomPass extends Pass {
 			Number(radius ?? 0),
 			Number(threshold ?? 0),
 		);
+		this.needsSwap = false;
 		this.updateOptions({
 			exposure,
 			strength,
 			radius,
 			threshold,
 		});
-
-		// UnrealBloomPass composites into the read buffer and doesn't require swap.
-		this.needsSwap = false;
 	}
 
 	updateOptions({
@@ -62,6 +60,6 @@ export class PPUnrealBloomPass extends Pass {
 
 	dispose() {
 		super.dispose();
-		this.unrealBloomPass?.dispose();
+		this.unrealBloomPass?.dispose?.();
 	}
 }

@@ -9,7 +9,6 @@ export { default as ColorHalftoneEffect } from "./ColorHalftoneEffect";
 export { default as DistortionEffect } from "./DistortionEffect";
 export { default as DotScreenEffect } from "./DotScreenEffect";
 export { default as GlitchEffect } from "./GlitchEffect";
-export { default as GridEffect } from "./GridEffect";
 export { default as HueSaturationEffect } from "./HueSaturationEffect";
 export { default as KaleidoscopeEffect } from "./KaleidoscopeEffect";
 export { default as LEDEffect } from "./LEDEffect";

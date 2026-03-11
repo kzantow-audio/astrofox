@@ -1,16 +1,16 @@
 // @ts-nocheck
-import { Pass } from "postprocessing";
 import {
 	HalfFloatType,
 	LinearFilter,
 	RGBAFormat,
 	WebGLRenderTarget,
-	WebGLRenderer,
 } from "three";
+import type { WebGLRenderer } from "three";
+import type Pass from "./composer/Pass";
 
 /**
  * V1-style ping-pong buffer chain.
- * Runs an array of postprocessing Pass objects, swapping instance-level
+ * Runs an array of render passes, swapping instance-level
  * inputBuffer / outputBuffer after each pass that sets needsSwap = true.
  * The final result is ALWAYS in this.inputBuffer.
  */
