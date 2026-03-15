@@ -195,6 +195,22 @@ function updateScenes(callback) {
 	return nextScenes;
 }
 
+export function getSceneIdForElement(
+	elementId,
+	sceneById = sceneStore.getState().sceneById,
+	elementParentSceneId = sceneStore.getState().elementParentSceneId,
+) {
+	if (!elementId) {
+		return null;
+	}
+
+	if (sceneById[elementId]) {
+		return elementId;
+	}
+
+	return elementParentSceneId[elementId] || null;
+}
+
 export function loadScenes(touch = true) {
 	setScenesState(stage.scenes.toJSON(), touch);
 }

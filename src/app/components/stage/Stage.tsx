@@ -1,11 +1,21 @@
+import useApp, { setCameraModeEnabled } from "@/app/actions/app";
 import useAudioStore, { loadAudioFile } from "@/app/actions/audio";
+import useScenes, { getSceneIdForElement } from "@/app/actions/scenes";
 import useStage from "@/app/actions/stage";
 import Spinner from "@/app/components/interface/Spinner";
 import { renderBackend } from "@/app/global";
+import { Video } from "@/app/icons";
+import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ignoreEvents } from "@/lib/utils/react";
 import { Download } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import shallow from "zustand/shallow";
 
 function isFileDrag(event: React.DragEvent) {
@@ -28,12 +38,29 @@ export default function Stage() {
 		(state) => [state.width, state.height, state.backgroundColor, state.zoom],
 		shallow,
 	);
+	const activeElementId = useApp((state) => state.activeElementId);
+	const cameraModeEnabled = useApp((state) => state.cameraModeEnabled);
+	const sceneById = useScenes((state) => state.sceneById) as Record<
+		string,
+		{ displayName?: string }
+	>;
+	const elementParentSceneId = useScenes(
+		(state) => state.elementParentSceneId,
+	) as Record<string, string>;
 	const canvas = useRef<HTMLCanvasElement>(null);
 	const initProps = useRef({ width, height, backgroundColor });
 	const loading = useAudioStore((state) => state.loading);
 	const [dropLoading, setDropLoading] = useState(false);
 	const [dragOverStage, setDragOverStage] = useState(false);
 	const dragDepth = useRef(0);
+	const activeSceneId = useMemo(
+		() =>
+			getSceneIdForElement(activeElementId, sceneById, elementParentSceneId),
+		[activeElementId, elementParentSceneId, sceneById],
+	);
+	const activeSceneName = activeSceneId
+		? sceneById[activeSceneId]?.displayName || "Scene"
+		: "No scene selected";
 
 	useEffect(() => {
 		const { width, height, backgroundColor } = initProps.current;
@@ -49,6 +76,29 @@ export default function Stage() {
 			renderBackend.dispose();
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!cameraModeEnabled) {
+			return;
+		}
+
+		function handleKeyDown(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				setCameraModeEnabled(false);
+			}
+		}
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [cameraModeEnabled]);
+
+	useEffect(() => {
+		if (cameraModeEnabled && !activeSceneId) {
+			setCameraModeEnabled(false);
+		}
+	}, [activeSceneId, cameraModeEnabled]);
 
 	async function handleDrop(e: React.DragEvent) {
 		if (!acceptStageDrag(e)) {
@@ -117,6 +167,14 @@ export default function Stage() {
 		height: `${height * zoom}px`,
 	};
 
+	function handleCameraModeToggle() {
+		if (!activeSceneId) {
+			return;
+		}
+
+		setCameraModeEnabled(!cameraModeEnabled);
+	}
+
 	return (
 		<div
 			className={"flex flex-col flex-1 min-w-0 min-h-0 overflow-auto relative"}
@@ -145,6 +203,33 @@ export default function Stage() {
 						onDragLeave={handleStageDragLeave}
 					/>
 					<Loading show={loading || dropLoading} />
+				</div>
+				<div className="mt-2 flex justify-end px-5">
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger render={<span />}>
+								<Button
+									type="button"
+									variant={
+										cameraModeEnabled && !!activeSceneId ? "default" : "outline"
+									}
+									size="icon-sm"
+									className="shadow-xl"
+									disabled={!activeSceneId}
+									onClick={handleCameraModeToggle}
+								>
+									<Video className="size-4" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent
+								side="bottom"
+								sideOffset={6}
+								className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
+							>
+								{"Camera control"}
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
 				</div>
 			</div>
 		</div>

@@ -3,6 +3,7 @@ import { updateElementProperties } from "@/app/actions/scenes";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import React from "react";
 import {
+	AxesHelper,
 	DepthFormat,
 	DepthTexture,
 	HalfFloatType,
@@ -51,6 +52,10 @@ export function PerspectiveScene3D({
 	const dofProperties = depthOfFieldEffect?.properties || {};
 	const depthOfFieldEnabled =
 		!!depthOfFieldEffect && depthOfFieldEffect.enabled !== false;
+	const cameraAxisScale = React.useMemo(
+		() => Math.max(48, Math.min(width, height) * 0.12),
+		[height, width],
+	);
 
 	const cameraZ = React.useMemo(
 		() => height / 2 / Math.tan(((PERSPECTIVE_FOV / 2) * Math.PI) / 180),
@@ -58,6 +63,27 @@ export function PerspectiveScene3D({
 	);
 
 	const perspScene = React.useMemo(() => new ThreeScene(), []);
+	const cameraAxisHelper = React.useMemo(() => {
+		const helper = new AxesHelper(1);
+		helper.renderOrder = 1000;
+		helper.frustumCulled = false;
+		helper.traverse((child) => {
+			const materials = Array.isArray(child.material)
+				? child.material
+				: child.material
+					? [child.material]
+					: [];
+
+			for (const material of materials) {
+				material.depthTest = false;
+				material.depthWrite = false;
+				material.transparent = true;
+				material.opacity = 0.95;
+				material.toneMapped = false;
+			}
+		});
+		return helper;
+	}, []);
 
 	const perspCamera = React.useMemo(() => {
 		const cam = new PerspectiveCamera(
@@ -127,6 +153,10 @@ export function PerspectiveScene3D({
 		perspCamera.aspect = width / height;
 		applyCameraState(cameraStateRef.current);
 	}, [applyCameraState, perspCamera, width, height, cameraZ]);
+
+	React.useEffect(() => {
+		cameraAxisHelper.scale.setScalar(cameraAxisScale);
+	}, [cameraAxisHelper, cameraAxisScale]);
 
 	React.useEffect(() => {
 		if (dragStateRef.current.active) {
@@ -306,11 +336,12 @@ export function PerspectiveScene3D({
 
 	React.useEffect(() => {
 		return () => {
+			cameraAxisHelper.dispose();
 			colorTarget.dispose();
 			effectTarget.dispose();
 			dofPassRef.current?.dispose?.();
 		};
-	}, [colorTarget, effectTarget]);
+	}, [cameraAxisHelper, colorTarget, effectTarget]);
 
 	const outputTexture =
 		depthOfFieldEnabled && colorTarget.depthTexture
@@ -353,7 +384,13 @@ export function PerspectiveScene3D({
 
 	return (
 		<>
-			{createPortal(children, perspScene)}
+			{createPortal(
+				<>
+					{children}
+					{cameraModeActive ? <primitive object={cameraAxisHelper} /> : null}
+				</>,
+				perspScene,
+			)}
 			<mesh renderOrder={renderOrder}>
 				<planeGeometry args={[width, height]} />
 				<meshBasicMaterial

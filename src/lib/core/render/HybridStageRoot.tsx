@@ -1,5 +1,6 @@
 // @ts-nocheck
 import useApp from "@/app/actions/app";
+import useScenes, { getSceneIdForElement } from "@/app/actions/scenes";
 import { BLANK_IMAGE } from "@/app/constants";
 import { useFrame } from "@react-three/fiber";
 import React from "react";
@@ -43,7 +44,17 @@ export default function HybridStageRoot({
 	sceneLayersRef,
 	onPresent,
 }) {
-	const cameraModeSceneId = useApp((state) => state.cameraModeSceneId);
+	const activeElementId = useApp((state) => state.activeElementId);
+	const cameraModeEnabled = useApp((state) => state.cameraModeEnabled);
+	const sceneById = useScenes((state) => state.sceneById);
+	const elementParentSceneId = useScenes((state) => state.elementParentSceneId);
+	const cameraModeSceneId = React.useMemo(
+		() =>
+			cameraModeEnabled
+				? getSceneIdForElement(activeElementId, sceneById, elementParentSceneId)
+				: null,
+		[activeElementId, cameraModeEnabled, elementParentSceneId, sceneById],
+	);
 	let order = 1;
 	let sceneOrder = 0;
 	const sceneProducers = [];

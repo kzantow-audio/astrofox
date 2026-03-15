@@ -1,5 +1,6 @@
 // @ts-nocheck
 import useApp from "@/app/actions/app";
+import useScenes, { getSceneIdForElement } from "@/app/actions/scenes";
 import { BLANK_IMAGE } from "@/app/constants";
 import React from "react";
 import { Color } from "three";
@@ -35,7 +36,17 @@ export default function R3FStageRoot({
 	frameData,
 	frameIndex,
 }) {
-	const cameraModeSceneId = useApp((state) => state.cameraModeSceneId);
+	const activeElementId = useApp((state) => state.activeElementId);
+	const cameraModeEnabled = useApp((state) => state.cameraModeEnabled);
+	const sceneById = useScenes((state) => state.sceneById);
+	const elementParentSceneId = useScenes((state) => state.elementParentSceneId);
+	const cameraModeSceneId = React.useMemo(
+		() =>
+			cameraModeEnabled
+				? getSceneIdForElement(activeElementId, sceneById, elementParentSceneId)
+				: null,
+		[activeElementId, cameraModeEnabled, elementParentSceneId, sceneById],
+	);
 	const bgColor = React.useMemo(
 		() => new Color(backgroundColor),
 		[backgroundColor],
