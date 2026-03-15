@@ -193,7 +193,7 @@ export default function HybridStageRoot({
 
 		const displayContent = (
 			<React.Fragment key={scene.id}>
-				{scene3D.length > 0 && (
+				{(scene3D.length > 0 || cameraModeSceneId === scene.id) && (
 					<PerspectiveScene3D
 						sceneId={scene.id}
 						sceneProperties={scene.properties || {}}
