@@ -1,10 +1,13 @@
-import useApp, { setCameraModeEnabled } from "@/app/actions/app";
+import useApp, {
+	setCameraModeEnabled,
+	setDisplayTransformModeEnabled,
+} from "@/app/actions/app";
 import useAudioStore, { loadAudioFile } from "@/app/actions/audio";
 import useScenes, { getSceneIdForElement } from "@/app/actions/scenes";
 import useStage from "@/app/actions/stage";
 import Spinner from "@/app/components/interface/Spinner";
-import { renderBackend } from "@/app/global";
-import { Video } from "@/app/icons";
+import { renderBackend, stage } from "@/app/global";
+import { VectorSquare, Video } from "@/app/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -17,6 +20,8 @@ import { Download } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import shallow from "zustand/shallow";
+import DisplayTransformOverlay from "./DisplayTransformOverlay";
+import { isTransformable2DDisplay } from "./displayTransform";
 
 function isFileDrag(event: React.DragEvent) {
 	const { types } = event.dataTransfer;
@@ -40,9 +45,16 @@ export default function Stage() {
 	);
 	const activeElementId = useApp((state) => state.activeElementId);
 	const cameraModeEnabled = useApp((state) => state.cameraModeEnabled);
+	const displayTransformModeEnabled = useApp(
+		(state) => state.displayTransformModeEnabled,
+	);
 	const sceneById = useScenes((state) => state.sceneById) as Record<
 		string,
 		{ displayName?: string }
+	>;
+	const elementById = useScenes((state) => state.elementById) as Record<
+		string,
+		Record<string, unknown>
 	>;
 	const elementParentSceneId = useScenes(
 		(state) => state.elementParentSceneId,
@@ -58,9 +70,12 @@ export default function Stage() {
 			getSceneIdForElement(activeElementId, sceneById, elementParentSceneId),
 		[activeElementId, elementParentSceneId, sceneById],
 	);
-	const activeSceneName = activeSceneId
-		? sceneById[activeSceneId]?.displayName || "Scene"
-		: "No scene selected";
+	const activeDisplay = useMemo(
+		() => stage.getStageElementById(activeElementId || ""),
+		[activeElementId, elementById[activeElementId || ""]],
+	);
+	const activeDisplayDescriptor = elementById[activeElementId || ""];
+	const transformableDisplaySelected = isTransformable2DDisplay(activeDisplay);
 
 	useEffect(() => {
 		const { width, height, backgroundColor } = initProps.current;
@@ -78,13 +93,14 @@ export default function Stage() {
 	}, []);
 
 	useEffect(() => {
-		if (!cameraModeEnabled) {
+		if (!cameraModeEnabled && !displayTransformModeEnabled) {
 			return;
 		}
 
 		function handleKeyDown(event: KeyboardEvent) {
 			if (event.key === "Escape") {
 				setCameraModeEnabled(false);
+				setDisplayTransformModeEnabled(false);
 			}
 		}
 
@@ -92,13 +108,19 @@ export default function Stage() {
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [cameraModeEnabled]);
+	}, [cameraModeEnabled, displayTransformModeEnabled]);
 
 	useEffect(() => {
 		if (cameraModeEnabled && !activeSceneId) {
 			setCameraModeEnabled(false);
 		}
 	}, [activeSceneId, cameraModeEnabled]);
+
+	useEffect(() => {
+		if (displayTransformModeEnabled && !transformableDisplaySelected) {
+			setDisplayTransformModeEnabled(false);
+		}
+	}, [displayTransformModeEnabled, transformableDisplaySelected]);
 
 	async function handleDrop(e: React.DragEvent) {
 		if (!acceptStageDrag(e)) {
@@ -172,7 +194,23 @@ export default function Stage() {
 			return;
 		}
 
+		if (!cameraModeEnabled) {
+			setDisplayTransformModeEnabled(false);
+		}
+
 		setCameraModeEnabled(!cameraModeEnabled);
+	}
+
+	function handleDisplayTransformModeToggle() {
+		if (!transformableDisplaySelected) {
+			return;
+		}
+
+		if (!displayTransformModeEnabled) {
+			setCameraModeEnabled(false);
+		}
+
+		setDisplayTransformModeEnabled(!displayTransformModeEnabled);
 	}
 
 	return (
@@ -202,10 +240,43 @@ export default function Stage() {
 						onDragEnter={handleStageDragEnter}
 						onDragLeave={handleStageDragLeave}
 					/>
+					<DisplayTransformOverlay
+						activeElementId={activeElementId}
+						displayDescriptor={activeDisplayDescriptor}
+						enabled={displayTransformModeEnabled}
+						stageWidth={width}
+						stageHeight={height}
+						zoom={zoom}
+					/>
 					<Loading show={loading || dropLoading} />
 				</div>
-				<div className="mt-2 flex justify-end px-5">
+				<div className="mt-2 flex justify-end gap-2 px-5">
 					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger render={<span />}>
+								<Button
+									type="button"
+									variant={
+										displayTransformModeEnabled && transformableDisplaySelected
+											? "default"
+											: "outline"
+									}
+									size="icon-sm"
+									className="shadow-xl"
+									disabled={!transformableDisplaySelected}
+									onClick={handleDisplayTransformModeToggle}
+								>
+									<VectorSquare className="size-4" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent
+								side="bottom"
+								sideOffset={6}
+								className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
+							>
+								{"Layer transform"}
+							</TooltipContent>
+						</Tooltip>
 						<Tooltip>
 							<TooltipTrigger render={<span />}>
 								<Button
