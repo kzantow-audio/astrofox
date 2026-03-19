@@ -58,7 +58,7 @@ export function GeometryDisplayLayer3D({
 		rotationRef.current.z += 2 * (fft[2] || 0);
 	}
 
-	const meshPosition = [x, -y, -z];
+	const meshPosition = [x, -y, z];
 	const meshRotation = [
 		rotationRef.current.x,
 		rotationRef.current.y,
