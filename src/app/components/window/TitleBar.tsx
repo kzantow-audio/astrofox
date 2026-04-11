@@ -5,13 +5,10 @@ import useAppStore, {
 	toggleRightPanelVisibility,
 } from "@/app/actions/app";
 import useProject, { DEFAULT_PROJECT_NAME } from "@/app/actions/project";
+import LiveModeToggle from "@/app/components/player/LiveModeToggle";
 import { env } from "@/app/global";
 import { Button } from "@/components/ui/button";
-import {
-	PanelBottom,
-	PanelLeft,
-	PanelRight,
-} from "lucide-react";
+import { Mic, PanelBottom, PanelLeft, PanelRight } from "lucide-react";
 import React from "react";
 
 export default function TitleBar() {
@@ -73,6 +70,9 @@ export default function TitleBar() {
 				{env.APP_NAME}
 			</div>
 			<div className="absolute top-1 right-2 flex items-center gap-1">
+				<LiveModeToggle>
+					<Mic size={16} />
+				</LiveModeToggle>
 				{panelButtons.map((button) => {
 					const Icon = button.icon;
 

@@ -22,6 +22,14 @@
 				"action": "load-audio"
 			},
 			{
+				"label": "Use microphone",
+				"action": "use-microphone"
+			},
+			{
+				"label": "Use MIDI",
+				"action": "use-midi"
+			},
+			{
 				"label": "Save image",
 				"action": "save-image"
 			},

@@ -10,6 +10,10 @@ interface Window {
 	}) => Promise<FileSystemFileHandle>;
 }
 
+interface Navigator {
+	requestMIDIAccess?: () => Promise<MIDIAccess>;
+}
+
 declare module "jsmediatags/dist/jsmediatags.min.js" {
 	const jsmediatags: {
 		read(

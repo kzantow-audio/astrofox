@@ -41,24 +41,69 @@ export default function Control({
 
 	const onChange = useEntity(display);
 
-	function mapOption(name: string, option: Record<string, unknown>) {
+	function resolveOption(name: string, option: Record<string, unknown>) {
 		const props: Record<string, unknown> = {};
 
-		for (const [name, value] of Object.entries(option)) {
-			props[name] = resolve(value, [display]);
+		for (const [propName, value] of Object.entries(option)) {
+			props[propName] = resolve(value, [display]);
 		}
 
+		if (props.hidden) {
+			return null;
+		}
+
+		return {
+			name,
+			group:
+				typeof props.group === "string" && props.group.trim().length > 0
+					? props.group
+					: null,
+			props,
+		};
+	}
+
+	function mapOption(
+		resolvedOption: {
+			name: string;
+			group: string | null;
+			props: Record<string, unknown>;
+		},
+		groupStarted: boolean,
+	) {
+		const { name, group, props } = resolvedOption;
+		const { group: _group, ...optionProps } = props;
+
 		return (
-			<Option
-				key={name}
-				display={display}
-				name={name}
-				value={(display.properties as Record<string, unknown>)[name]}
-				onChange={inputValueToProps(onChange)}
-				{...props}
-			/>
+			<React.Fragment key={name}>
+				{group && !groupStarted ? (
+					<div className="mx-2.5 mt-3 px-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
+						{group}
+					</div>
+				) : null}
+				<Option
+					display={display}
+					name={name}
+					value={(display.properties as Record<string, unknown>)[name]}
+					onChange={inputValueToProps(onChange)}
+					{...optionProps}
+				/>
+			</React.Fragment>
 		);
 	}
+
+	const visibleOptions = Object.keys(controls)
+		.map((key) => resolveOption(key, controls[key]))
+		.filter(
+			(
+				option,
+			): option is {
+				name: string;
+				group: string | null;
+				props: Record<string, unknown>;
+			} => option !== null,
+		);
+
+	let activeGroup: string | null = null;
 
 	return (
 		<div className={classNames("pb-2", className)}>
@@ -97,7 +142,11 @@ export default function Control({
 					</div>
 				</div>
 			)}
-			{Object.keys(controls).map((key) => mapOption(key, controls[key]))}
+			{visibleOptions.map((option) => {
+				const groupStarted = Boolean(option.group && option.group === activeGroup);
+				activeGroup = option.group;
+				return mapOption(option, groupStarted);
+			})}
 		</div>
 	);
 }

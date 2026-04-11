@@ -1,4 +1,3 @@
-import type { RenderFrameData } from "@/lib/types";
 import {
 	events,
 	analyzer,
@@ -6,6 +5,7 @@ import {
 	reactors,
 	renderBackend,
 } from "@/app/global";
+import type { RenderFrameData } from "@/lib/types";
 import Clock from "./Clock";
 
 const STOP_RENDERING = 0;
@@ -43,9 +43,7 @@ export default class Renderer {
 	}
 
 	resetAnalyzer() {
-		const audio = player.getAudio();
-
-		if (audio && !audio.paused) {
+		if (player.hasSource()) {
 			analyzer.reset();
 		}
 	}
@@ -77,15 +75,25 @@ export default class Renderer {
 			clock: { delta },
 		} = this;
 		const playing = player.isPlaying();
+		const analysis = player.getAnalysisData({
+			fft: analyzer.fft,
+			td: analyzer.td,
+			gain: analyzer.gain,
+			analyzer: analyzer.analyzer,
+		});
 
 		frameData.id = id;
 		frameData.hasUpdate = playing || id === VIDEO_RENDERING;
 		frameData.audioPlaying = playing;
-		frameData.gain = analyzer.gain;
-		frameData.fft = analyzer.fft;
-		frameData.td = analyzer.td;
+		frameData.gain = analysis.gain;
+		frameData.fft = analysis.fft;
+		frameData.td = analysis.td;
 		frameData.reactors = reactors.getResults(frameData);
 		frameData.delta = delta;
+		frameData.inputMode = player.getMode();
+		frameData.isLive = player.isLive();
+		frameData.sourceLabel = player.getSourceLabel();
+		frameData.midiActivity = analysis.activity;
 
 		return frameData;
 	}
@@ -120,9 +128,7 @@ export default class Renderer {
 
 		this.clock.update();
 
-		if (player.isPlaying()) {
-			analyzer.process(undefined);
-		}
+		player.updateAnalysis(analyzer);
 
 		const data = this.getFrameData(id);
 

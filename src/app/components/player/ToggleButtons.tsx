@@ -1,4 +1,5 @@
 import useAppStore from "@/app/actions/app";
+import useAudioStore from "@/app/actions/audio";
 import { player } from "@/app/global";
 import useForceUpdate from "@/app/hooks/useForceUpdate";
 import { Cycle } from "@/app/icons";
@@ -14,10 +15,11 @@ import React from "react";
 
 export default function ToggleButtons() {
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
+	const liveModeEnabled = useAudioStore((state) => state.liveModeEnabled);
 	const forceUpdate = useForceUpdate();
 	const looping = player.isLooping();
 
-	if (isVideoRecording) {
+	if (isVideoRecording || liveModeEnabled) {
 		return null;
 	}
 

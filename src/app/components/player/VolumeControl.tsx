@@ -1,4 +1,4 @@
-// @ts-nocheck
+import useAudioStore from "@/app/actions/audio";
 import { RangeInput } from "@/app/components/inputs";
 import { player } from "@/app/global";
 import { Volume, Volume2, Volume3, Volume4 } from "@/app/icons";
@@ -9,84 +9,93 @@ const STORAGE_KEY = "astrofox.player.volume";
 const STORAGE_MUTE_KEY = "astrofox.player.volumeMuted";
 
 const initialState = {
-  value: 100,
-  mute: false,
+	value: 100,
+	mute: false,
 };
 
 export default function VolumeControl() {
-  const [state, setState] = useState(initialState);
-  const { value, mute } = state;
-  const VolumeIcon = getIcon();
+	const { liveModeEnabled, mode } = useAudioStore((state) => ({
+		liveModeEnabled: state.liveModeEnabled,
+		mode: state.mode,
+	}));
+	const [state, setState] = useState(initialState);
+	const { value, mute } = state;
+	const VolumeIcon = getIcon();
 
-  function persistState(nextValue, nextMute) {
-    localStorage.setItem(STORAGE_KEY, String(nextValue));
-    localStorage.setItem(STORAGE_MUTE_KEY, String(nextMute));
-  }
+	if (liveModeEnabled && (mode === "microphone" || mode === "midi")) {
+		return null;
+	}
 
-  useEffect(() => {
-    const rawValue = Number(localStorage.getItem(STORAGE_KEY));
-    const storedMute = localStorage.getItem(STORAGE_MUTE_KEY) === "true";
-    const nextValue =
-      Number.isFinite(rawValue) && rawValue >= 0 && rawValue <= 100
-        ? rawValue
-        : 100;
+	function persistState(nextValue: number, nextMute: boolean) {
+		localStorage.setItem(STORAGE_KEY, String(nextValue));
+		localStorage.setItem(STORAGE_MUTE_KEY, String(nextMute));
+	}
 
-    setState({ value: nextValue, mute: storedMute });
-    player.setVolume(storedMute ? 0 : nextValue / 100);
-  }, []);
+	useEffect(() => {
+		const rawValue = Number(localStorage.getItem(STORAGE_KEY));
+		const storedMute = localStorage.getItem(STORAGE_MUTE_KEY) === "true";
+		const nextValue =
+			Number.isFinite(rawValue) && rawValue >= 0 && rawValue <= 100
+				? rawValue
+				: 100;
 
-  function handleChange(name, value) {
-    setState({ value, mute: false });
-    player.setVolume(value / 100);
-    persistState(value, false);
-  }
+		setState({ value: nextValue, mute: storedMute });
+		player.setVolume(storedMute ? 0 : nextValue / 100);
+	}, []);
 
-  function handleClick() {
-    setState((prevState) => {
-      const nextMute = !prevState.mute;
-      player.setVolume(nextMute ? 0 : prevState.value / 100);
-      persistState(prevState.value, nextMute);
+	function handleChange(_name: string, value: number) {
+		setState({ value, mute: false });
+		player.setVolume(value / 100);
+		persistState(value, false);
+	}
 
-      return { ...prevState, mute: nextMute };
-    });
-  }
+	function handleClick() {
+		setState((prevState) => {
+			const nextMute = !prevState.mute;
+			player.setVolume(nextMute ? 0 : prevState.value / 100);
+			persistState(prevState.value, nextMute);
 
-  function getIcon() {
-    let icon = null;
+			return { ...prevState, mute: nextMute };
+		});
+	}
 
-    if (value < 10 || mute) {
-      icon = Volume4;
-    } else if (value < 25) {
-      icon = Volume3;
-    } else if (value < 75) {
-      icon = Volume2;
-    } else {
-      icon = Volume;
-    }
+	function getIcon() {
+		let icon = null;
 
-    return icon;
-  }
+		if (value < 10 || mute) {
+			icon = Volume4;
+		} else if (value < 25) {
+			icon = Volume3;
+		} else if (value < 75) {
+			icon = Volume2;
+		} else {
+			icon = Volume;
+		}
 
-  return (
-    <div className={"flex"}>
-      <div
-        className={classNames(
-          "mr-3 inline-flex h-4 w-4 items-center justify-center text-neutral-100",
-          { "text-neutral-400": mute },
-        )}
-        onClick={handleClick}
-      >
-        <VolumeIcon className={"text-inherit"} />
-      </div>
-      <div className={"flex items-center w-24"}>
-        <RangeInput
-          name="volume"
-          min={0}
-          max={100}
-          value={mute ? 0 : value}
-          onChange={handleChange}
-        />
-      </div>
-    </div>
-  );
+		return icon;
+	}
+
+	return (
+		<div className={"flex"}>
+			<button
+				type="button"
+				className={classNames(
+					"mr-3 inline-flex h-4 w-4 items-center justify-center text-neutral-100",
+					{ "text-neutral-400": mute },
+				)}
+				onClick={handleClick}
+			>
+				<VolumeIcon className={"text-inherit"} />
+			</button>
+			<div className={"flex items-center w-24"}>
+				<RangeInput
+					name="volume"
+					min={0}
+					max={100}
+					value={mute ? 0 : value}
+					onChange={handleChange}
+				/>
+			</div>
+		</div>
+	);
 }

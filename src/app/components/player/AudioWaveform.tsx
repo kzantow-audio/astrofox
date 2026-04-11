@@ -1,10 +1,11 @@
 import useAppStore from "@/app/actions/app";
+import useAudioStore from "@/app/actions/audio";
 import { player } from "@/app/global";
 import useSharedState from "@/app/hooks/useSharedState";
 import CanvasAudio from "@/lib/canvas/CanvasAudio";
 import classNames from "classnames";
 import type React from "react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
 const canvasProperties = {
 	width: 854,
@@ -18,6 +19,10 @@ const canvasProperties = {
 
 export default function AudioWaveform() {
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
+	const { liveModeEnabled, mode } = useAudioStore((state) => ({
+		liveModeEnabled: state.liveModeEnabled,
+		mode: state.mode,
+	}));
 	const videoExportSegment = useAppStore((state) => state.videoExportSegment);
 	const [state, setState] = useSharedState();
 	const { progressPosition, seekPosition } = state as {
@@ -28,7 +33,7 @@ export default function AudioWaveform() {
 	const canvas = useRef<HTMLCanvasElement>(null);
 	const hasAudioRef = useRef(false);
 	const flatRenderedRef = useRef(false);
-	const [hasAudio, setHasAudio] = useState(() => player.hasAudio());
+	const hasAudio = !liveModeEnabled && mode === "file" && player.canSeek();
 
 	const [baseCanvas, progressCanvas, seekCanvas] = useMemo(
 		() => [
@@ -210,7 +215,6 @@ export default function AudioWaveform() {
 		seekCanvas.render(audio.buffer);
 		hasAudioRef.current = true;
 		flatRenderedRef.current = false;
-		setHasAudio(true);
 	}
 
 	useEffect(() => {
@@ -220,6 +224,15 @@ export default function AudioWaveform() {
 			player.off("audio-load", loadAudio);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!hasAudio) {
+			hasAudioRef.current = false;
+			return;
+		}
+
+		loadAudio();
+	}, [hasAudio]);
 
 	useLayoutEffect(() => {
 		if (hasAudio) {

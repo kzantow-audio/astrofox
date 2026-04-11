@@ -1,6 +1,6 @@
-// @ts-nocheck
-import { RangeInput } from "@/app/components/inputs";
 import useAppStore from "@/app/actions/app";
+import useAudioStore from "@/app/actions/audio";
+import { RangeInput } from "@/app/components/inputs";
 import TimeInfo from "@/app/components/player/TimeInfo";
 import { player } from "@/app/global";
 import useSharedState from "@/app/hooks/useSharedState";
@@ -14,19 +14,30 @@ const initialState = {
 	buffering: false,
 };
 
+type ProgressState = typeof initialState;
+
 export default function ProgressControl() {
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
-	const [state, setState] = useSharedState(initialState);
+	const { liveModeEnabled, mode, sourceLabel } = useAudioStore((state) => ({
+		liveModeEnabled: state.liveModeEnabled,
+		mode: state.mode,
+		sourceLabel: state.sourceLabel,
+	}));
+	const [state, setState] = useSharedState(initialState) as readonly [
+		ProgressState,
+		(nextState: Partial<ProgressState>) => void,
+	];
 	const { progressPosition, seekPosition, buffering } = state;
 	const duration = player.getDuration();
-	const disabled = !player.hasAudio() || isVideoRecording;
+	const canSeek = player.canSeek();
+	const disabled = !canSeek || isVideoRecording;
 
-	function handleProgressChange(value) {
+	function handleProgressChange(value: number) {
 		player.seek(value);
 		setState({ progressPosition: value, seekPosition: 0, buffering: false });
 	}
 
-	function handleProgressUpdate(value) {
+	function handleProgressUpdate(value: number) {
 		setState({ seekPosition: value, buffering: true });
 	}
 
@@ -49,6 +60,21 @@ export default function ProgressControl() {
 			player.off("stop", handlePlayerStop);
 		};
 	}, []);
+
+	if (liveModeEnabled && !canSeek) {
+		const liveText =
+			mode === "microphone"
+				? sourceLabel || "Live microphone input"
+				: mode === "midi"
+					? sourceLabel || "Live MIDI input"
+					: "Load an audio file or choose a live input";
+
+		return (
+			<div className="flex flex-1 items-center">
+				<div className="text-sm text-neutral-400">{liveText}</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className={"flex items-center flex-1"}>

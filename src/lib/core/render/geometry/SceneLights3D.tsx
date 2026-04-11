@@ -46,6 +46,9 @@ export function SceneLights3D({ sceneProperties = {}, width, height }) {
 		keyLightIntensity = 2.2,
 		fillLightIntensity = 0.75,
 		rimLightIntensity = 0.35,
+		keyLightDistance,
+		fillLightDistance,
+		rimLightDistance,
 		lightDistance = 700,
 		lightColor = "#FFFFFF",
 		fillLightColor = "#FFFFFF",
@@ -55,16 +58,27 @@ export function SceneLights3D({ sceneProperties = {}, width, height }) {
 
 	const preset =
 		LIGHTING_PRESETS[String(lightingPreset)] || LIGHTING_PRESETS.Studio;
-	const resolvedDistance = Math.max(50, Number(lightDistance) || 50);
+	const resolvedKeyDistance = Math.max(
+		50,
+		Number(keyLightDistance ?? lightDistance) || 50,
+	);
+	const resolvedFillDistance = Math.max(
+		50,
+		Number(fillLightDistance ?? lightDistance) || 50,
+	);
+	const resolvedRimDistance = Math.max(
+		50,
+		Number(rimLightDistance ?? lightDistance) || 50,
+	);
 	const viewportWidth = Math.max(1, Number(width) || 1);
 	const viewportHeight = Math.max(1, Number(height) || 1);
-	const shadowSpanX = Math.max(viewportWidth * 0.85, resolvedDistance * 0.8);
-	const shadowSpanY = Math.max(viewportHeight * 0.85, resolvedDistance * 0.8);
+	const shadowSpanX = Math.max(viewportWidth * 0.85, resolvedKeyDistance * 0.8);
+	const shadowSpanY = Math.max(viewportHeight * 0.85, resolvedKeyDistance * 0.8);
 
 	return (
 		<>
 			<directionalLight
-				position={scalePosition(preset.keyPosition, resolvedDistance)}
+				position={scalePosition(preset.keyPosition, resolvedKeyDistance)}
 				intensity={Math.max(0, Number(keyLightIntensity) || 0) * preset.key}
 				color={lightColor}
 				castShadow={!!shadows}
@@ -73,7 +87,7 @@ export function SceneLights3D({ sceneProperties = {}, width, height }) {
 				shadow-bias={-0.00035}
 				shadow-normalBias={0.02}
 				shadow-camera-near={1}
-				shadow-camera-far={Math.max(resolvedDistance * 4, 4000)}
+				shadow-camera-far={Math.max(resolvedKeyDistance * 4, 4000)}
 				shadow-camera-left={-shadowSpanX}
 				shadow-camera-right={shadowSpanX}
 				shadow-camera-top={shadowSpanY}
@@ -82,13 +96,13 @@ export function SceneLights3D({ sceneProperties = {}, width, height }) {
 			<pointLight
 				intensity={Math.max(0, Number(fillLightIntensity) || 0) * preset.fill}
 				decay={0}
-				position={scalePosition(preset.fillPosition, resolvedDistance)}
+				position={scalePosition(preset.fillPosition, resolvedFillDistance)}
 				color={fillLightColor}
 			/>
 			<pointLight
 				intensity={Math.max(0, Number(rimLightIntensity) || 0) * preset.rim}
 				decay={0}
-				position={scalePosition(preset.rimPosition, resolvedDistance)}
+				position={scalePosition(preset.rimPosition, resolvedRimDistance)}
 				color={rimLightColor}
 			/>
 		</>

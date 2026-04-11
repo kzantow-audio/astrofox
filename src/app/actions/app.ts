@@ -1,4 +1,9 @@
-import audioStore, { loadAudioFile, openAudioFile } from "@/app/actions/audio";
+import audioStore, {
+	connectMicrophone,
+	connectMidiInput,
+	loadAudioFile,
+	openAudioFile,
+} from "@/app/actions/audio";
 import { raiseError } from "@/app/actions/error";
 import { showModal } from "@/app/actions/modals";
 import {
@@ -561,6 +566,14 @@ export async function handleMenuAction(action: string) {
 
 		case "load-audio":
 			await openAudioFile(undefined);
+			break;
+
+		case "use-microphone":
+			await connectMicrophone(undefined);
+			break;
+
+		case "use-midi":
+			await connectMidiInput(undefined);
 			break;
 
 		case "save-image":
