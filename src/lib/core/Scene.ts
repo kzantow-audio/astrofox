@@ -119,6 +119,7 @@ export default class Scene extends Display {
 				max: 4,
 				step: 0.01,
 				withRange: true,
+				withReactor: true,
 				group: "Key",
 			},
 			keyLightDistance: {
@@ -128,6 +129,7 @@ export default class Scene extends Display {
 				max: 2500,
 				step: 1,
 				withRange: true,
+				withReactor: true,
 				group: "Key",
 			},
 			lightColor: {
@@ -142,6 +144,7 @@ export default class Scene extends Display {
 				max: 4,
 				step: 0.01,
 				withRange: true,
+				withReactor: true,
 				group: "Fill",
 			},
 			fillLightDistance: {
@@ -151,6 +154,7 @@ export default class Scene extends Display {
 				max: 2500,
 				step: 1,
 				withRange: true,
+				withReactor: true,
 				group: "Fill",
 			},
 			fillLightColor: {
@@ -165,6 +169,7 @@ export default class Scene extends Display {
 				max: 4,
 				step: 0.01,
 				withRange: true,
+				withReactor: true,
 				group: "Rim",
 			},
 			rimLightDistance: {
@@ -174,6 +179,7 @@ export default class Scene extends Display {
 				max: 2500,
 				step: 1,
 				withRange: true,
+				withReactor: true,
 				group: "Rim",
 			},
 			rimLightColor: {

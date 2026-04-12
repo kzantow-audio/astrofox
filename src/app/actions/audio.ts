@@ -96,6 +96,19 @@ function toDeviceOption(device: MediaDeviceInfo, index: number) {
 	};
 }
 
+function getPreferredMicrophoneId(
+	microphones: InputOption[],
+	currentSelection: string,
+) {
+	if (microphones.some((device) => device.id === currentSelection)) {
+		return currentSelection;
+	}
+
+	const defaultDevice = microphones.find((device) => device.id === "default");
+
+	return defaultDevice?.id || microphones[0]?.id || "";
+}
+
 function toMidiOption(input: MIDIInput) {
 	return {
 		id: input.id,
@@ -214,11 +227,10 @@ export async function refreshMicrophoneDevices() {
 		.filter((device) => device.kind === "audioinput")
 		.map(toDeviceOption);
 	const currentSelection = audioStore.getState().selectedMicrophoneId;
-	const selectedMicrophoneId = microphones.some(
-		(device) => device.id === currentSelection,
-	)
-		? currentSelection
-		: microphones[0]?.id || "";
+	const selectedMicrophoneId = getPreferredMicrophoneId(
+		microphones,
+		currentSelection,
+	);
 
 	updateAudioState({
 		microphoneSupported: true,
@@ -478,8 +490,8 @@ export function setLiveModeEnabled(enabled: boolean) {
 	appStore.setState({
 		statusText:
 			liveInputMode === "microphone"
-				? "Live mode: choose a microphone"
-				: "Live mode: choose a MIDI input",
+				? "Input mode: choose a microphone"
+				: "Input mode: choose a MIDI input",
 	});
 }
 

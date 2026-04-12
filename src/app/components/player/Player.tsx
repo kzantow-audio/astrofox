@@ -4,6 +4,7 @@ import AudioWaveform from "./AudioWaveform";
 import LiveInputButton from "./LiveInputButton";
 import LiveInputGain from "./LiveInputGain";
 import LiveModePanel from "./LiveModePanel";
+import LiveModeToggle from "./LiveModeToggle";
 import LiveOscilloscope, { LIVE_SCOPE_WIDTH } from "./LiveOscilloscope";
 import PlayButtons from "./PlayButtons";
 
@@ -21,12 +22,16 @@ export default function Player() {
 			<div className="min-w-lg overflow-hidden border-t border-t-neutral-800 bg-neutral-900 px-5 py-2.5">
 				{liveModeEnabled ? (
 					<div
-						className="mx-auto flex w-full items-center gap-3"
+						className="mx-auto flex w-full items-center justify-between gap-4"
 						style={{ maxWidth: LIVE_SCOPE_WIDTH }}
 					>
-						<LiveModePanel />
-						<LiveInputButton />
-						<LiveInputGain />
+						<div className="flex min-w-0 items-center gap-3">
+							<LiveModePanel />
+						</div>
+						<div className="flex shrink-0 items-center gap-3">
+							<LiveInputGain />
+							<LiveInputButton />
+						</div>
 					</div>
 				) : (
 					<div className="flex flex-row items-center [&_>_div]:mr-5 [&_>_div:last-child]:mr-0">
@@ -34,6 +39,9 @@ export default function Player() {
 						<VolumeControl />
 						<ProgressControl />
 						<ToggleButtons />
+						<div className="ml-auto mr-0 flex items-center">
+							<LiveModeToggle mode="enable" />
+						</div>
 					</div>
 				)}
 			</div>

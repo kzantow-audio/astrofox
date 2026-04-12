@@ -1,10 +1,17 @@
-import useAudioStore from "@/app/actions/audio";
+import useAudioStore, { setLiveModeEnabled } from "@/app/actions/audio";
 import { PRIMARY_COLOR } from "@/app/constants";
 import { events, analyzer } from "@/app/global";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import WaveParser from "@/lib/audio/WaveParser";
 import CanvasWave from "@/lib/canvas/CanvasWave";
 import type { RenderFrameData } from "@/lib/types";
 import classNames from "classnames";
+import { X } from "lucide-react";
 import React, { useEffect, useMemo, useRef } from "react";
 
 export const LIVE_SCOPE_WIDTH = 854;
@@ -113,6 +120,28 @@ export default function LiveOscilloscope() {
 				},
 			)}
 		>
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<button
+								type="button"
+								className="absolute top-2 right-2 z-10 inline-flex min-h-6 min-w-6 shrink-0 items-center justify-center rounded bg-neutral-900 text-neutral-100 cursor-default [&:hover]:bg-neutral-800"
+								onClick={() => setLiveModeEnabled(false)}
+							/>
+						}
+					>
+						<X className="h-4 w-4" />
+					</TooltipTrigger>
+					<TooltipContent
+						side="top"
+						sideOffset={6}
+						className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
+					>
+						Close input mode
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
 			<div
 				className="relative mx-auto mt-4 overflow-hidden border border-neutral-800 bg-neutral-900 shadow-[inset_0_0_70px_rgba(0,_0,_0,_0.72)]"
 				style={{ width, height }}

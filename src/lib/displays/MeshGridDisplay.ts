@@ -21,11 +21,11 @@ export default class MeshGridDisplay extends Display {
 		type: "display",
 		label: "Mesh Grid",
 		defaultProperties: {
-			material: "Points",
+			material: "Standard",
 			shading: "Smooth",
 			motion: "Wave",
 			color: "#FFFFFF",
-			wireframe: false,
+			wireframe: true,
 			edges: false,
 			edgeColor: "#FFFFFF",
 			x: 0,

@@ -1,30 +1,59 @@
 import useAudioStore, { setLiveModeEnabled } from "@/app/actions/audio";
 import { Button } from "@/components/ui/button";
-import type React from "react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import classNames from "classnames";
+import { Mic, X } from "lucide-react";
 
 interface LiveModeToggleProps {
-	children?: React.ReactNode;
+	mode?: "enable" | "close";
+	className?: string;
 }
 
-export default function LiveModeToggle({ children }: LiveModeToggleProps) {
+export default function LiveModeToggle({
+	mode,
+	className,
+}: LiveModeToggleProps) {
 	const liveModeEnabled = useAudioStore((state) => state.liveModeEnabled);
+	const action = mode || (liveModeEnabled ? "close" : "enable");
+	const enabling = action === "enable";
+	const label = enabling ? "Enable input mode" : "Close input mode";
 
 	return (
-		<Button
-			type="button"
-			variant="ghost"
-			size={children ? "icon-sm" : "sm"}
-			aria-label={liveModeEnabled ? "Disable live mode" : "Enable live mode"}
-			aria-pressed={liveModeEnabled}
-			title={liveModeEnabled ? "Disable live mode" : "Enable live mode"}
-			className={
-				liveModeEnabled
-					? "bg-transparent text-primary hover:bg-neutral-800 hover:text-primary"
-					: "bg-transparent text-neutral-500 hover:bg-neutral-800 hover:text-neutral-100"
-			}
-			onClick={() => setLiveModeEnabled(!liveModeEnabled)}
-		>
-			{children || "Live Mode"}
-		</Button>
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger
+					render={
+						<Button
+							type="button"
+							variant={enabling ? "outline" : "ghost"}
+							size="icon-sm"
+							aria-label={label}
+							aria-pressed={enabling ? liveModeEnabled : undefined}
+							className={classNames(
+								enabling
+									? "border-neutral-700 bg-transparent text-neutral-300 hover:border-primary hover:bg-neutral-800 hover:text-neutral-100"
+									: "bg-transparent text-neutral-500 hover:bg-neutral-800 hover:text-neutral-100",
+								className,
+							)}
+							onClick={() => setLiveModeEnabled(enabling)}
+						/>
+					}
+				>
+					{enabling ? <Mic size={16} /> : <X size={16} />}
+				</TooltipTrigger>
+				<TooltipContent
+					side="bottom"
+					sideOffset={6}
+					className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
+				>
+					{label}
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
 	);
 }

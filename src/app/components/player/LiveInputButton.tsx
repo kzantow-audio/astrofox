@@ -68,7 +68,6 @@ export default function LiveInputButton() {
 			aria-label={active ? "Stop microphone input" : "Start microphone input"}
 			aria-pressed={active}
 			disabled={disabled}
-			title={active ? "Stop microphone input" : "Start microphone input"}
 			onClick={handleClick}
 		>
 			<Mic className="h-5 w-5" />
