@@ -207,8 +207,8 @@ export function CubesDisplayLayer3D({
 }) {
 	const { properties = {} } = display;
 	const {
-		rows = 7,
-		columns = 12,
+		rows = 8,
+		columns = 8,
 		gap = 2,
 		surfaceColor = "#000000",
 		borderColor = "#FFFFFF",
@@ -231,16 +231,15 @@ export function CubesDisplayLayer3D({
 	const gridColumns = Math.max(1, Math.round(Number(columns) || 1));
 	const viewportWidth = Math.max(1, Number(width) || 1);
 	const viewportHeight = Math.max(1, Number(height) || 1);
-	const cellWidth = viewportWidth / gridColumns;
-	const cellHeight = viewportHeight / gridRows;
-	const blockGap = clamp(
-		Number(gap) || 0,
-		0,
-		Math.max(0, Math.min(cellWidth, cellHeight) - 2),
+	const cellSize = Math.min(
+		viewportWidth / gridColumns,
+		viewportHeight / gridRows,
 	);
-	const cubeWidth = Math.max(2, cellWidth - blockGap);
-	const cubeHeight = Math.max(2, cellHeight - blockGap);
-	const cellDepth = Math.min(cellWidth, cellHeight);
+	const gridWidth = cellSize * gridColumns;
+	const gridHeight = cellSize * gridRows;
+	const blockGap = clamp(Number(gap) || 0, 0, Math.max(0, cellSize - 2));
+	const cubeSize = Math.max(2, cellSize - blockGap);
+	const cellDepth = cellSize;
 	const baseDepth = Math.max(4, cellDepth * DEPTH_BASE_RATIO);
 	const maxDepth = cellDepth * DEPTH_MAX_RATIO;
 	const extrusionHeight = clamp(
@@ -341,14 +340,14 @@ export function CubesDisplayLayer3D({
 				timeRef.current,
 			);
 			const shapedValue = clamp(value, 0, 1) ** 0.8;
-			const x = -viewportWidth / 2 + cellWidth * (columnIndex + 0.5);
-			const z = -viewportHeight / 2 + cellHeight * (rowIndex + 0.5);
+			const x = -gridWidth / 2 + cellSize * (columnIndex + 0.5);
+			const z = -gridHeight / 2 + cellSize * (rowIndex + 0.5);
 			const depth = baseDepth + shapedValue * extrusionHeight * maxDepth;
 
 			cubes.push({
 				key: `${rowIndex}-${columnIndex}`,
 				position: [x, 0, z],
-				scale: [cubeWidth, depth, cubeHeight],
+				scale: [cubeSize, depth, cubeSize],
 			});
 		}
 	}
@@ -361,9 +360,7 @@ export function CubesDisplayLayer3D({
 				receiveShadow={true}
 				renderOrder={order - 0.01}
 			>
-				<planeGeometry
-					args={[viewportWidth + cubeWidth, viewportHeight + cubeHeight]}
-				/>
+				<planeGeometry args={[gridWidth + cubeSize, gridHeight + cubeSize]} />
 				<shadowMaterial transparent={true} opacity={0.68} />
 			</mesh>
 			{cubes.map((cube) => (

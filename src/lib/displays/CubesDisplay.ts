@@ -16,8 +16,8 @@ export default class CubesDisplay extends Display {
 		type: "display",
 		label: "Cubes",
 		defaultProperties: {
-			rows: 7,
-			columns: 12,
+			rows: 8,
+			columns: 8,
 			gap: 2,
 			surfaceColor: "#000000",
 			borderColor: "#FFFFFF",
