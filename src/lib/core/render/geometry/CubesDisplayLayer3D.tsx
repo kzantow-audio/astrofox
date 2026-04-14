@@ -6,8 +6,6 @@ import {
 	BoxGeometry,
 	Color,
 	CustomBlending,
-	EdgesGeometry,
-	LineBasicMaterial,
 	MeshStandardMaterial,
 	OneFactor,
 	ZeroFactor,
@@ -23,6 +21,26 @@ const DEPTH_MAX_RATIO = 3.6;
 
 function clamp(value: number, min: number, max: number) {
 	return Math.max(min, Math.min(max, value));
+}
+
+function getColorLuminance(color: Color) {
+	return color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
+}
+
+function getLiftedSurfaceColor(colorValue: string) {
+	const color = new Color(colorValue);
+	const luminance = getColorLuminance(color);
+
+	if (luminance >= 0.12) {
+		return color;
+	}
+
+	// Very dark albedo values read as "lighting is broken" on standard materials.
+	// Lift them toward a dark neutral so scene light color and intensity remain visible.
+	return color.lerp(
+		new Color("#383838"),
+		clamp((0.12 - luminance) / 0.12, 0, 1),
+	);
 }
 
 function sampleSpectrum(values: Float32Array, t: number) {
@@ -261,6 +279,14 @@ export function CubesDisplayLayer3D({
 		: getThreeBlending(sceneBlendMode);
 	const resolvedSurfaceColor = sceneMask ? "#000000" : surfaceColor;
 	const resolvedBorderColor = sceneMask ? "#000000" : borderColor;
+	const litSurfaceColor = React.useMemo(
+		() => getLiftedSurfaceColor(resolvedSurfaceColor),
+		[resolvedSurfaceColor],
+	);
+	const litBorderColor = React.useMemo(
+		() => getLiftedSurfaceColor(resolvedBorderColor),
+		[resolvedBorderColor],
+	);
 	const premultipliedAlpha = requiresPremultipliedAlpha(sceneBlendMode);
 	const borderOpacity = sceneMask ? 1 : Math.min(1, finalOpacity * 0.95);
 	const surfaceEmissiveColor = React.useMemo(
@@ -272,14 +298,10 @@ export function CubesDisplayLayer3D({
 		geometry.translate(0, 0.5, 0);
 		return geometry;
 	}, []);
-	const edgeGeometry = React.useMemo(
-		() => new EdgesGeometry(boxGeometry),
-		[boxGeometry],
-	);
 	const surfaceMaterial = React.useMemo(
 		() =>
 			new MeshStandardMaterial({
-				color: new Color(resolvedSurfaceColor),
+				color: litSurfaceColor,
 				emissive: surfaceEmissiveColor,
 				transparent: true,
 				opacity: finalOpacity,
@@ -299,33 +321,44 @@ export function CubesDisplayLayer3D({
 		[
 			blending,
 			finalOpacity,
+			litSurfaceColor,
 			premultipliedAlpha,
 			surfaceEmissiveColor,
-			resolvedSurfaceColor,
 			sceneMask,
 		],
 	);
 	const edgeMaterial = React.useMemo(
 		() =>
-			new LineBasicMaterial({
-				color: new Color(resolvedBorderColor),
+			new MeshStandardMaterial({
+				color: litBorderColor,
 				transparent: true,
 				opacity: borderOpacity,
+				wireframe: true,
+				roughness: 0.7,
+				metalness: 0.03,
 				premultipliedAlpha,
 				blending,
 				depthTest: true,
 				depthWrite: false,
+				polygonOffset: true,
+				polygonOffsetFactor: -1,
+				polygonOffsetUnits: -1,
+				blendEquation: sceneMask ? AddEquation : undefined,
+				blendSrc: sceneMask ? ZeroFactor : undefined,
+				blendDst: sceneMask ? OneFactor : undefined,
+				blendEquationAlpha: sceneMask ? AddEquation : undefined,
+				blendSrcAlpha: sceneMask ? OneFactor : undefined,
+				blendDstAlpha: sceneMask ? ZeroFactor : undefined,
 			}),
-		[blending, borderOpacity, premultipliedAlpha, resolvedBorderColor],
+		[blending, borderOpacity, litBorderColor, premultipliedAlpha, sceneMask],
 	);
 	React.useEffect(() => {
 		return () => {
 			boxGeometry.dispose();
-			edgeGeometry.dispose();
 			surfaceMaterial.dispose();
 			edgeMaterial.dispose();
 		};
-	}, [boxGeometry, edgeGeometry, edgeMaterial, surfaceMaterial]);
+	}, [boxGeometry, edgeMaterial, surfaceMaterial]);
 
 	const cubes = [];
 	for (let rowIndex = 0; rowIndex < gridRows; rowIndex += 1) {
@@ -372,10 +405,11 @@ export function CubesDisplayLayer3D({
 						castShadow={true}
 						receiveShadow={true}
 					/>
-					<lineSegments
-						geometry={edgeGeometry}
+					<mesh
+						geometry={boxGeometry}
 						material={edgeMaterial}
 						renderOrder={order + 0.01}
+						scale={[1.001, 1.001, 1.001]}
 					/>
 				</group>
 			))}

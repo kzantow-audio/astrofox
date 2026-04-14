@@ -84,13 +84,13 @@ export default class Scene extends Display {
 			lighting: false,
 			keyLightIntensity: 2.2,
 			keyLightDistance: 700,
-			lightColor: "#FFFFFF",
+			lightColor: "#0000FF",
 			fillLightIntensity: 0.75,
 			fillLightDistance: 700,
-			fillLightColor: "#FFFFFF",
+			fillLightColor: "#00FF00",
 			rimLightIntensity: 0.35,
 			rimLightDistance: 700,
-			rimLightColor: "#F3F1FF",
+			rimLightColor: "#FF0000",
 		},
 		controls: {
 			blendMode: {
