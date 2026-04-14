@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { clamp } from "@/lib/utils/math";
+import { useFrame } from "@react-three/fiber";
 import React from "react";
 import {
 	AddEquation,
@@ -8,7 +9,6 @@ import {
 	Color,
 	CustomBlending,
 	Matrix4,
-	Object3D,
 	OneFactor,
 	Quaternion,
 	TubeGeometry,
@@ -268,6 +268,7 @@ export function TunnelDisplayLayer3D({
 	height,
 	sceneProperties,
 	frameData,
+	sceneCamera,
 	sceneOpacity,
 	sceneBlendMode,
 	sceneMask,
@@ -297,13 +298,14 @@ export function TunnelDisplayLayer3D({
 	const timeRef = React.useRef(0);
 	const materialRef = React.useRef(null);
 	const meshRef = React.useRef(null);
+	const groupRef = React.useRef(null);
 	const geometryRef = React.useRef(null);
-	const groupAnchorRef = React.useRef(null);
 	const curvePointsRef = React.useRef([]);
 	const frameTangentsRef = React.useRef([]);
 	const frameNormalsRef = React.useRef([]);
 	const frameBinormalsRef = React.useRef([]);
 	const initialFrameNormalRef = React.useRef(new Vector3(0, 1, 0));
+	const fallbackGroupQuaternionRef = React.useRef(new Quaternion());
 	const structuralKeyRef = React.useRef("");
 	const deltaSeconds = Math.max(0, Number(frameData?.delta ?? 16.667)) / 1000;
 
@@ -356,9 +358,6 @@ export function TunnelDisplayLayer3D({
 		? CustomBlending
 		: getThreeBlending(sceneBlendMode);
 	const rollRadians = ((Number(bank) || 0) * Math.PI) / 180;
-	if (!groupAnchorRef.current) {
-		groupAnchorRef.current = new Object3D();
-	}
 	_cameraWorldPosition.set(
 		groupPosition[0],
 		groupPosition[1],
@@ -369,7 +368,7 @@ export function TunnelDisplayLayer3D({
 		_worldPoint.set(0, 0, 0),
 		_up.set(0, 1, 0),
 	);
-	groupAnchorRef.current.quaternion.setFromRotationMatrix(_cameraLookMatrix);
+	fallbackGroupQuaternionRef.current.setFromRotationMatrix(_cameraLookMatrix);
 	const uniforms = React.useMemo(
 		() => ({
 			uTime: { value: 0 },
@@ -518,11 +517,27 @@ export function TunnelDisplayLayer3D({
 			meshRef.current.geometry = geometryRef.current;
 		}
 	});
+	useFrame(() => {
+		const group = groupRef.current;
+		if (!group) {
+			return;
+		}
+
+		if (sceneCamera) {
+			group.position.copy(sceneCamera.position);
+			group.quaternion.copy(sceneCamera.quaternion);
+			return;
+		}
+
+		group.position.set(groupPosition[0], groupPosition[1], groupPosition[2]);
+		group.quaternion.copy(fallbackGroupQuaternionRef.current);
+	});
 
 	return (
 		<group
+			ref={groupRef}
 			position={groupPosition}
-			quaternion={groupAnchorRef.current.quaternion}
+			quaternion={fallbackGroupQuaternionRef.current}
 			scale={[1, 1, 1]}
 		>
 			<mesh ref={meshRef} renderOrder={order} frustumCulled={false}>

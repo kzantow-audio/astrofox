@@ -363,6 +363,15 @@ export function PerspectiveScene3D({
 		depthOfFieldEnabled && colorTarget.depthTexture
 			? effectTarget.texture
 			: colorTarget.texture;
+	const sceneChildren = React.useMemo(
+		() =>
+			React.Children.map(children, (child) =>
+				React.isValidElement(child)
+					? React.cloneElement(child, { sceneCamera: perspCamera })
+					: child,
+			),
+		[children, perspCamera],
+	);
 
 	React.useEffect(() => {
 		const material = materialRef.current;
@@ -407,7 +416,7 @@ export function PerspectiveScene3D({
 						width={width}
 						height={height}
 					/>
-					{children}
+					{sceneChildren}
 					{cameraModeActive ? <primitive object={cameraAxisHelper} /> : null}
 				</>,
 				perspScene,
