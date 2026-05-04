@@ -7,7 +7,7 @@ export default function LiveInputGain() {
 		liveInputGain: state.liveInputGain,
 	}));
 
-	if (liveInputMode !== "microphone") {
+	if (liveInputMode !== "microphone" && liveInputMode !== "desktop") {
 		return null;
 	}
 

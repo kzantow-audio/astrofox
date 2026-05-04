@@ -12,7 +12,7 @@ export interface RenderFrameData {
 	audioPlaying: boolean;
 	hasUpdate: boolean;
 	reactors: Record<string, number>;
-	inputMode?: "file" | "microphone" | "midi" | null;
+	inputMode?: "file" | "microphone" | "midi" | "desktop" | null;
 	isLive?: boolean;
 	sourceLabel?: string;
 	midiActivity?: number;

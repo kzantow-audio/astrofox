@@ -1,24 +1,35 @@
-import useAudioStore, { connectMicrophone } from "@/app/actions/audio";
+import useAudioStore, {
+	connectDesktopAudio,
+	connectMicrophone,
+	setLiveModeEnabled,
+} from "@/app/actions/audio";
 import { player } from "@/app/global";
 import useForceUpdate from "@/app/hooks/useForceUpdate";
 import classNames from "classnames";
-import { Mic } from "lucide-react";
+import { Mic, Monitor } from "lucide-react";
 import { useEffect } from "react";
 
 export default function LiveInputButton() {
 	const forceUpdate = useForceUpdate();
-	const { liveInputMode, loading, microphoneDevices } = useAudioStore(
-		(state) => ({
+	const { liveInputMode, loading, microphoneDevices, desktopAudioSupported } =
+		useAudioStore((state) => ({
 			liveInputMode: state.liveInputMode,
 			loading: state.loading,
 			microphoneDevices: state.microphoneDevices,
-		}),
-	);
-	const isMicrophoneMode = liveInputMode === "microphone";
-	const hasSource = player.getMode() === "microphone" && player.hasSource();
-	const active = isMicrophoneMode && player.isPlaying();
+			desktopAudioSupported: state.desktopAudioSupported,
+		}));
+	const isStreamMode =
+		liveInputMode === "microphone" || liveInputMode === "desktop";
+	const hasSource =
+		(player.getMode() === "microphone" || player.getMode() === "desktop") &&
+		player.hasSource();
+	const active = isStreamMode && player.isPlaying();
+	const InputIcon = liveInputMode === "desktop" ? Monitor : Mic;
 	const disabled =
-		!isMicrophoneMode || loading || microphoneDevices.length === 0;
+		!isStreamMode ||
+		loading ||
+		(liveInputMode === "microphone" && microphoneDevices.length === 0) ||
+		(liveInputMode === "desktop" && !desktopAudioSupported);
 
 	useEffect(() => {
 		player.on("playback-change", forceUpdate);
@@ -30,7 +41,7 @@ export default function LiveInputButton() {
 		};
 	}, [forceUpdate]);
 
-	if (!isMicrophoneMode) {
+	if (!isStreamMode) {
 		return null;
 	}
 
@@ -40,11 +51,21 @@ export default function LiveInputButton() {
 		}
 
 		if (!hasSource) {
+			if (liveInputMode === "desktop") {
+				void connectDesktopAudio();
+				return;
+			}
+
 			void connectMicrophone();
 			return;
 		}
 
 		if (active) {
+			if (liveInputMode === "desktop") {
+				setLiveModeEnabled(false);
+				return;
+			}
+
 			player.stop();
 			return;
 		}
@@ -65,12 +86,14 @@ export default function LiveInputButton() {
 					"cursor-not-allowed border-neutral-800 text-neutral-600": disabled,
 				},
 			)}
-			aria-label={active ? "Stop microphone input" : "Start microphone input"}
+			aria-label={
+				active ? `Stop ${liveInputMode} input` : `Start ${liveInputMode} input`
+			}
 			aria-pressed={active}
 			disabled={disabled}
 			onClick={handleClick}
 		>
-			<Mic className="h-5 w-5" />
+			<InputIcon className="h-5 w-5" />
 		</button>
 	);
 }

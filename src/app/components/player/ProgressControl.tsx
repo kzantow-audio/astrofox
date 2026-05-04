@@ -65,9 +65,11 @@ export default function ProgressControl() {
 		const liveText =
 			mode === "microphone"
 				? sourceLabel || "Live microphone input"
-				: mode === "midi"
-					? sourceLabel || "Live MIDI input"
-					: "Load an audio file or choose a live input";
+				: mode === "desktop"
+					? sourceLabel || "Live desktop audio"
+					: mode === "midi"
+						? sourceLabel || "Live MIDI input"
+						: "Load an audio file or choose a live input";
 
 		return (
 			<div className="flex flex-1 items-center">

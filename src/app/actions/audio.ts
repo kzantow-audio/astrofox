@@ -13,8 +13,8 @@ export interface InputOption {
 
 export interface AudioState {
 	liveModeEnabled: boolean;
-	liveInputMode: "microphone" | "midi";
-	mode: "file" | "microphone" | "midi";
+	liveInputMode: "microphone" | "midi" | "desktop";
+	mode: "file" | "microphone" | "midi" | "desktop";
 	file: string;
 	source: File | null;
 	sourceLabel: string;
@@ -28,6 +28,7 @@ export interface AudioState {
 	selectedMidiInputId: string;
 	liveInputGain: number;
 	microphoneSupported: boolean;
+	desktopAudioSupported: boolean;
 	midiSupported: boolean;
 }
 
@@ -48,6 +49,7 @@ export const initialState: AudioState = {
 	selectedMidiInputId: "",
 	liveInputGain: 100,
 	microphoneSupported: false,
+	desktopAudioSupported: false,
 	midiSupported: false,
 };
 
@@ -66,12 +68,14 @@ let midiAccess: MIDIAccess | null = null;
 let activeMidiInput: MIDIInput | null = null;
 
 function updateAudioState(
-	partial: Partial<AudioState> & { mode?: "file" | "microphone" | "midi" },
+	partial: Partial<AudioState> & {
+		mode?: "file" | "microphone" | "midi" | "desktop";
+	},
 ) {
 	audioStore.setState(partial);
 }
 
-function resetSourceState(mode: "file" | "microphone" | "midi") {
+function resetSourceState(mode: "file" | "microphone" | "midi" | "desktop") {
 	updateAudioState({
 		mode,
 		file: "",
@@ -244,6 +248,12 @@ export async function refreshMicrophoneDevices() {
 export async function refreshInputOptions() {
 	await refreshMicrophoneDevices();
 	await syncMidiInputs();
+
+	const desktopAudioSupported =
+		typeof navigator !== "undefined" &&
+		!!navigator.mediaDevices?.getDisplayMedia;
+
+	updateAudioState({ desktopAudioSupported });
 }
 
 export function selectMicrophoneDevice(deviceId: string) {
@@ -402,6 +412,77 @@ export async function connectMicrophone(deviceId?: string) {
 	}
 }
 
+export async function connectDesktopAudio() {
+	if (
+		typeof navigator === "undefined" ||
+		!navigator.mediaDevices?.getDisplayMedia
+	) {
+		raiseError("Desktop audio capture is not supported in this browser.");
+		return false;
+	}
+
+	updateAudioState({ loading: true });
+	detachMidiInput();
+	player.clearSource();
+
+	try {
+		if (audioContext.state === "suspended") {
+			await audioContext.resume();
+		}
+
+		const stream = await navigator.mediaDevices.getDisplayMedia({
+			video: true,
+			audio: true,
+			systemAudio: "include",
+		});
+
+		for (const track of stream.getVideoTracks()) {
+			track.stop();
+		}
+
+		if (stream.getAudioTracks().length === 0) {
+			throw new Error(
+				"No audio track was shared. Select a source that includes audio.",
+			);
+		}
+
+		stream.getAudioTracks()[0].addEventListener("ended", () => {
+			setLiveModeEnabled(false);
+		});
+
+		const label = stream.getAudioTracks()[0]?.label || "Desktop Audio";
+		player.useDesktopAudio(stream, analyzer.analyzer, label);
+		player.setInputGain(audioStore.getState().liveInputGain / 100);
+
+		appStore.setState({
+			statusText: trimChars(`Live: ${label}`),
+		});
+
+		updateAudioState({
+			liveModeEnabled: true,
+			liveInputMode: "desktop",
+			mode: "desktop",
+			file: "",
+			source: null,
+			sourceLabel: label,
+			duration: 0,
+			tags: null,
+			loading: false,
+		});
+
+		return true;
+	} catch (error) {
+		if (error instanceof Error && error.name === "NotAllowedError") {
+			updateAudioState({ loading: false });
+			return false;
+		}
+
+		raiseError("Failed to capture desktop audio.", error);
+		resetSourceState("desktop");
+		return false;
+	}
+}
+
 export async function connectMidiInput(inputId?: string) {
 	const selectedInputId = inputId || audioStore.getState().selectedMidiInputId;
 
@@ -457,7 +538,7 @@ export async function connectMidiInput(inputId?: string) {
 	}
 }
 
-export function setLiveInputMode(mode: "microphone" | "midi") {
+export function setLiveInputMode(mode: "microphone" | "midi" | "desktop") {
 	updateAudioState({
 		liveInputMode: mode,
 		mode,
@@ -491,7 +572,9 @@ export function setLiveModeEnabled(enabled: boolean) {
 		statusText:
 			liveInputMode === "microphone"
 				? "Input mode: choose a microphone"
-				: "Input mode: choose a MIDI input",
+				: liveInputMode === "desktop"
+					? "Input mode: desktop audio"
+					: "Input mode: choose a MIDI input",
 	});
 }
 

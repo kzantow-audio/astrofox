@@ -1,4 +1,5 @@
 import useAudioStore, {
+	connectDesktopAudio,
 	connectMidiInput,
 	refreshInputOptions,
 	refreshMicrophoneDevices,
@@ -15,12 +16,16 @@ export default function LiveModePanel() {
 		liveInputMode,
 		microphoneDevices,
 		selectedMicrophoneId,
+		desktopAudioSupported,
 		midiInputs,
 		selectedMidiInputId,
 	} = useAudioStore((state) => state);
 	const hasMidiInputs = midiInputs.length > 0;
 	const liveInputItems = [
 		{ id: "microphone", label: "Microphone" },
+		...(desktopAudioSupported
+			? [{ id: "desktop", label: "Desktop Audio" }]
+			: []),
 		{ id: "midi", label: "MIDI" },
 	] as Array<Record<string, string>>;
 	const microphoneItems =
@@ -73,26 +78,38 @@ export default function LiveModePanel() {
 				width={140}
 				onChange={(_name, value) =>
 					setLiveInputMode(
-						(String(value) as "microphone" | "midi") || "microphone",
+						(String(value) as "microphone" | "midi" | "desktop") ||
+							"microphone",
 					)
 				}
 			/>
 
-			{liveInputMode === "microphone" ? (
-				<>
-					<SelectInput
-						name="microphone-device"
-						value={selectedMicrophoneId || microphoneDevices[0]?.id || ""}
-						items={microphoneItems}
-						valueField="id"
-						displayField="label"
-						width={260}
-						onChange={(_name, value) =>
-							void selectMicrophoneDevice(String(value || ""))
-						}
-					/>
-				</>
-			) : (
+			{liveInputMode === "microphone" && (
+				<SelectInput
+					name="microphone-device"
+					value={selectedMicrophoneId || microphoneDevices[0]?.id || ""}
+					items={microphoneItems}
+					valueField="id"
+					displayField="label"
+					width={260}
+					onChange={(_name, value) =>
+						void selectMicrophoneDevice(String(value || ""))
+					}
+				/>
+			)}
+
+			{liveInputMode === "desktop" && (
+				<button
+					type="button"
+					className="inline-flex h-8 items-center rounded border border-input bg-input/30 px-2.5 text-sm text-neutral-300 shadow-xs transition-colors hover:bg-input/50 hover:text-neutral-100 disabled:pointer-events-none disabled:opacity-50"
+					disabled={loading || !desktopAudioSupported}
+					onClick={() => void connectDesktopAudio()}
+				>
+					Capture Desktop Audio
+				</button>
+			)}
+
+			{liveInputMode === "midi" && (
 				<>
 					<SelectInput
 						name="midi-input"

@@ -5,7 +5,7 @@ import MidiController, {
 import EventEmitter from "@/lib/core/EventEmitter";
 
 const UPDATE_INTERVAL = 200;
-export type InputMode = "file" | "microphone" | "midi";
+export type InputMode = "file" | "microphone" | "midi" | "desktop";
 
 export interface PlayerCapabilities {
 	canSeek: boolean;
@@ -70,6 +70,26 @@ export default class Player extends EventEmitter {
 		this.clearSource();
 
 		this.mode = "microphone";
+		this.sourceLabel = sourceLabel;
+		this.stream = stream;
+		this.streamAnalyzer = analyzerNode;
+		this.streamSource = this.audioContext.createMediaStreamSource(stream);
+		this.reconnectLiveNodes();
+		this.liveActive = true;
+
+		this.emit("source-change");
+		this.emit("play");
+		this.emit("playback-change");
+	}
+
+	useDesktopAudio(
+		stream: MediaStream,
+		analyzerNode: AudioNode,
+		sourceLabel = "Desktop Audio",
+	) {
+		this.clearSource();
+
+		this.mode = "desktop";
 		this.sourceLabel = sourceLabel;
 		this.stream = stream;
 		this.streamAnalyzer = analyzerNode;
@@ -209,7 +229,7 @@ export default class Player extends EventEmitter {
 			return;
 		}
 
-		if (mode === "microphone" && this.streamSource) {
+		if ((mode === "microphone" || mode === "desktop") && this.streamSource) {
 			if (this.liveActive) {
 				this.pause();
 				return;
@@ -247,7 +267,7 @@ export default class Player extends EventEmitter {
 			return;
 		}
 
-		if (mode === "microphone" && this.liveActive) {
+		if ((mode === "microphone" || mode === "desktop") && this.liveActive) {
 			this.disconnectLiveNodes();
 			this.liveActive = false;
 			this.emit("pause");
@@ -273,8 +293,11 @@ export default class Player extends EventEmitter {
 			return;
 		}
 
-		if ((mode === "microphone" || mode === "midi") && this.liveActive) {
-			if (mode === "microphone") {
+		if (
+			(mode === "microphone" || mode === "desktop" || mode === "midi") &&
+			this.liveActive
+		) {
+			if (mode === "microphone" || mode === "desktop") {
 				this.disconnectLiveNodes();
 			}
 
@@ -300,7 +323,7 @@ export default class Player extends EventEmitter {
 	hasAudio() {
 		return this.mode === "file"
 			? !!this.getAudio()
-			: this.mode === "microphone";
+			: this.mode === "microphone" || this.mode === "desktop";
 	}
 
 	hasSource() {
@@ -375,7 +398,11 @@ export default class Player extends EventEmitter {
 	}
 
 	isLive() {
-		return this.mode === "microphone" || this.mode === "midi";
+		return (
+			this.mode === "microphone" ||
+			this.mode === "desktop" ||
+			this.mode === "midi"
+		);
 	}
 
 	getMode() {

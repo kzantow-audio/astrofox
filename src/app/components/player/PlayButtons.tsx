@@ -1,5 +1,5 @@
 import useAppStore from "@/app/actions/app";
-import useAudioStore from "@/app/actions/audio";
+import useAudioStore, { setLiveModeEnabled } from "@/app/actions/audio";
 import { player } from "@/app/global";
 import useForceUpdate from "@/app/hooks/useForceUpdate";
 import { Pause, Play, Stop } from "@/app/icons";
@@ -46,6 +46,11 @@ export default function PlayButtons() {
 			return;
 		}
 
+		if (liveModeEnabled && mode === "desktop") {
+			setLiveModeEnabled(false);
+			return;
+		}
+
 		player.stop();
 	}
 
@@ -65,9 +70,11 @@ export default function PlayButtons() {
 						: "Start live input"
 				: mode === "microphone"
 					? "Connect microphone"
-					: mode === "midi"
-						? "Connect MIDI input"
-						: "Load audio";
+					: mode === "desktop"
+						? "Capture desktop audio"
+						: mode === "midi"
+							? "Connect MIDI input"
+							: "Load audio";
 	const stopTitle = hasSource
 		? !liveModeEnabled || mode === "file"
 			? "Stop"

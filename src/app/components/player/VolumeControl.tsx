@@ -22,7 +22,10 @@ export default function VolumeControl() {
 	const { value, mute } = state;
 	const VolumeIcon = getIcon();
 
-	if (liveModeEnabled && (mode === "microphone" || mode === "midi")) {
+	if (
+		liveModeEnabled &&
+		(mode === "microphone" || mode === "desktop" || mode === "midi")
+	) {
 		return null;
 	}
 

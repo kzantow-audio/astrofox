@@ -52,7 +52,9 @@ export default function LiveOscilloscope() {
 	const levelRef = useRef<HTMLDivElement>(null);
 	const waveRef = useRef<CanvasWave | null>(null);
 	const parserRef = useRef<WaveParser | null>(null);
-	const visible = liveModeEnabled && (mode === "microphone" || mode === "midi");
+	const visible =
+		liveModeEnabled &&
+		(mode === "microphone" || mode === "desktop" || mode === "midi");
 	const { width, height } = scopeProperties;
 
 	const flatline = useMemo(() => new Float32Array(width).fill(0.5), [width]);
@@ -75,11 +77,14 @@ export default function LiveOscilloscope() {
 				return;
 			}
 
-			if (mode === "microphone") {
+			if (mode === "microphone" || mode === "desktop") {
 				analyzer.analyzer.getFloatTimeDomainData(analyzer.td);
 			}
 
-			const td = mode === "microphone" ? analyzer.td : frameData?.td;
+			const td =
+				mode === "microphone" || mode === "desktop"
+					? analyzer.td
+					: frameData?.td;
 			const sampleSize = Math.max(96, Math.floor(width / 3));
 			const values = td
 				? parserRef.current.parseTimeData(td, sampleSize)
