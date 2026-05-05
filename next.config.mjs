@@ -21,19 +21,6 @@ const nextConfig = {
 			"@": resolveFromRoot("src"),
 		},
 		rules: {
-			"*.less": [
-				{
-					condition: {
-						path: /\.module\.less$/i,
-					},
-					loaders: ["less-loader"],
-					as: "*.module.css",
-				},
-				{
-					loaders: ["less-loader"],
-					as: "*.css",
-				},
-			],
 			"*.svg": {
 				loaders: ["@svgr/webpack"],
 				as: "*.js",
