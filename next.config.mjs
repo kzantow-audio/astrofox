@@ -49,7 +49,7 @@ const nextConfig = {
   },
   rewrites: async () => [
     {
-      source: '/u.js*',
+      source: '/u.js',
       destination: 'https://cloud.umami.is/script.js',
     },
   ],
