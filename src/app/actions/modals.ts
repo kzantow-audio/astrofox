@@ -1,5 +1,5 @@
 import { uniqueId } from "@/lib/utils/crypto";
-import create from "zustand";
+import { create } from "zustand";
 
 interface Modal {
 	id: string;

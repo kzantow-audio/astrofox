@@ -5,6 +5,7 @@ import TimeInfo from "@/app/components/player/TimeInfo";
 import { player } from "@/app/global";
 import useSharedState from "@/app/hooks/useSharedState";
 import React, { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 const PROGRESS_MAX = 1000;
 
@@ -18,11 +19,13 @@ type ProgressState = typeof initialState;
 
 export default function ProgressControl() {
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
-	const { liveModeEnabled, mode, sourceLabel } = useAudioStore((state) => ({
-		liveModeEnabled: state.liveModeEnabled,
-		mode: state.mode,
-		sourceLabel: state.sourceLabel,
-	}));
+	const { liveModeEnabled, mode, sourceLabel } = useAudioStore(
+		useShallow((state) => ({
+			liveModeEnabled: state.liveModeEnabled,
+			mode: state.mode,
+			sourceLabel: state.sourceLabel,
+		})),
+	);
 	const [state, setState] = useSharedState(initialState) as readonly [
 		ProgressState,
 		(nextState: Partial<ProgressState>) => void,

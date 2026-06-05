@@ -9,17 +9,20 @@ import classNames from "classnames";
 import { useTranslations } from "next-intl";
 import { Mic, Monitor } from "lucide-react";
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export default function LiveInputButton() {
 	const t = useTranslations("player");
 	const forceUpdate = useForceUpdate();
 	const { liveInputMode, loading, microphoneDevices, desktopAudioSupported } =
-		useAudioStore((state) => ({
-			liveInputMode: state.liveInputMode,
-			loading: state.loading,
-			microphoneDevices: state.microphoneDevices,
-			desktopAudioSupported: state.desktopAudioSupported,
-		}));
+		useAudioStore(
+			useShallow((state) => ({
+				liveInputMode: state.liveInputMode,
+				loading: state.loading,
+				microphoneDevices: state.microphoneDevices,
+				desktopAudioSupported: state.desktopAudioSupported,
+			})),
+		);
 	const isStreamMode =
 		liveInputMode === "microphone" || liveInputMode === "desktop";
 	const hasSource =

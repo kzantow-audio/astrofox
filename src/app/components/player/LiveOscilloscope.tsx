@@ -13,6 +13,7 @@ import type { RenderFrameData } from "@/lib/types";
 import classNames from "classnames";
 import { X } from "lucide-react";
 import React, { useEffect, useMemo, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export const LIVE_SCOPE_WIDTH = 854;
 
@@ -44,10 +45,12 @@ function getPoints(values: Float32Array, width: number, gain: number) {
 }
 
 export default function LiveOscilloscope() {
-	const { liveModeEnabled, mode } = useAudioStore((state) => ({
-		liveModeEnabled: state.liveModeEnabled,
-		mode: state.mode,
-	}));
+	const { liveModeEnabled, mode } = useAudioStore(
+		useShallow((state) => ({
+			liveModeEnabled: state.liveModeEnabled,
+			mode: state.mode,
+		})),
+	);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const levelRef = useRef<HTMLDivElement>(null);
 	const waveRef = useRef<CanvasWave | null>(null);

@@ -24,7 +24,7 @@ import {
 import Plugin from "@/lib/core/Plugin";
 import * as displays from "@/lib/displays";
 import * as effects from "@/lib/effects";
-import create from "zustand";
+import { create } from "zustand";
 
 export interface VideoExportSegment {
 	startPosition: number;

@@ -2,7 +2,7 @@
 import { analyzer, api, audioContext, logger, player } from "@/app/global";
 import { loadAudioData } from "@/lib/utils/audio";
 import { trimChars } from "@/lib/utils/string";
-import create from "zustand";
+import { create } from "zustand";
 import appStore from "./app";
 import { raiseError } from "./error";
 

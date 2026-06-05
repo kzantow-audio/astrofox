@@ -14,6 +14,7 @@ Thumbs.db
 *.iml
 *.bat
 *.map
+next-env.d.ts
 
 # Project
 node_modules

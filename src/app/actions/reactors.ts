@@ -1,5 +1,5 @@
 import { reactors, stage } from "@/app/global";
-import create from "zustand";
+import { create } from "zustand";
 import { setActiveReactorId } from "./app";
 import { loadScenes } from "./scenes";
 

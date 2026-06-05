@@ -1,5 +1,11 @@
-import React from "react";
-import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture, TextureLoader } from "three";
+import React from 'react';
+import {
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  SRGBColorSpace,
+  type Texture,
+  TextureLoader,
+} from 'three';
 
 const textureLoader = new TextureLoader();
 
@@ -9,28 +15,28 @@ const textureLoader = new TextureLoader();
  * Disposes the previous texture automatically when the source changes or on unmount.
  */
 export function useTexture3D(src: string | undefined): Texture | null {
-	const [texture, setTexture] = React.useState<Texture | null>(null);
+  const [texture, setTexture] = React.useState<Texture | null>(null);
 
-	React.useEffect(() => {
-		if (!src) {
-			setTexture(null);
-			return;
-		}
+  React.useEffect(() => {
+    if (!src) {
+      setTexture(null);
+      return;
+    }
 
-		const tex = textureLoader.load(src, (loaded) => {
-			loaded.minFilter = LinearMipmapLinearFilter;
-			loaded.magFilter = LinearFilter;
-			loaded.colorSpace = SRGBColorSpace;
-			loaded.generateMipmaps = true;
-			loaded.needsUpdate = true;
-			setTexture(loaded);
-		});
+    const tex = textureLoader.load(src, (loaded: Texture) => {
+      loaded.minFilter = LinearMipmapLinearFilter;
+      loaded.magFilter = LinearFilter;
+      loaded.colorSpace = SRGBColorSpace;
+      loaded.generateMipmaps = true;
+      loaded.needsUpdate = true;
+      setTexture(loaded);
+    });
 
-		return () => {
-			tex.dispose();
-			setTexture(null);
-		};
-	}, [src]);
+    return () => {
+      tex.dispose();
+      setTexture(null);
+    };
+  }, [src]);
 
-	return texture;
+  return texture;
 }

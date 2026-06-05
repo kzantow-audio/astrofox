@@ -6,6 +6,7 @@ import CanvasAudio from "@/lib/canvas/CanvasAudio";
 import classNames from "classnames";
 import type React from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 const canvasProperties = {
 	width: 854,
@@ -19,10 +20,12 @@ const canvasProperties = {
 
 export default function AudioWaveform() {
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
-	const { liveModeEnabled, mode } = useAudioStore((state) => ({
-		liveModeEnabled: state.liveModeEnabled,
-		mode: state.mode,
-	}));
+	const { liveModeEnabled, mode } = useAudioStore(
+		useShallow((state) => ({
+			liveModeEnabled: state.liveModeEnabled,
+			mode: state.mode,
+		})),
+	);
 	const videoExportSegment = useAppStore((state) => state.videoExportSegment);
 	const [state, setState] = useSharedState();
 	const { progressPosition, seekPosition } = state as {

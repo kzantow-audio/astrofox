@@ -1,11 +1,14 @@
 import useAudioStore, { setLiveInputGain } from "@/app/actions/audio";
 import { RangeInput } from "@/app/components/inputs";
+import { useShallow } from "zustand/react/shallow";
 
 export default function LiveInputGain() {
-	const { liveInputMode, liveInputGain } = useAudioStore((state) => ({
-		liveInputMode: state.liveInputMode,
-		liveInputGain: state.liveInputGain,
-	}));
+	const { liveInputMode, liveInputGain } = useAudioStore(
+		useShallow((state) => ({
+			liveInputMode: state.liveInputMode,
+			liveInputGain: state.liveInputGain,
+		})),
+	);
 
 	if (liveInputMode !== "microphone" && liveInputMode !== "desktop") {
 		return null;

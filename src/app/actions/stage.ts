@@ -6,7 +6,7 @@ import {
 } from "@/app/constants";
 import { renderBackend, renderer } from "@/app/global";
 import { clamp } from "@/lib/utils/math";
-import create from "zustand";
+import { create } from "zustand";
 import { touchProject } from "./project";
 
 interface StageState {

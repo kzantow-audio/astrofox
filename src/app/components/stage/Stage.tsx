@@ -22,7 +22,7 @@ import { ignoreEvents } from "@/lib/utils/react";
 import { Download, PictureInPicture2 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import shallow from "zustand/shallow";
+import { useShallow } from "zustand/react/shallow";
 import DisplayTransformOverlay from "./DisplayTransformOverlay";
 import { isTransformable2DDisplay } from "./displayTransform";
 
@@ -43,8 +43,12 @@ function acceptStageDrag(event: React.DragEvent) {
 
 export default function Stage() {
 	const [width, height, backgroundColor, zoom] = useStage(
-		(state) => [state.width, state.height, state.backgroundColor, state.zoom],
-		shallow,
+		useShallow((state) => [
+			state.width,
+			state.height,
+			state.backgroundColor,
+			state.zoom,
+		]),
 	);
 	const activeElementId = useApp((state) => state.activeElementId);
 	const cameraModeEnabled = useApp((state) => state.cameraModeEnabled);

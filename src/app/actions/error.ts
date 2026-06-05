@@ -1,5 +1,5 @@
 import { logger } from "@/app/global";
-import create from "zustand";
+import { create } from "zustand";
 import { showModal } from "./modals";
 
 interface ErrorState {

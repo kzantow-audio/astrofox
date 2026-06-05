@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { renderer, stage } from "@/app/global";
 import { getDisplayRenderGroup } from "@/lib/utils/displayRenderGroup";
-import create from "zustand";
+import { create } from "zustand";
 import { touchProject } from "./project";
 
 const initialState = {

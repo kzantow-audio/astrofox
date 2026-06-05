@@ -20,7 +20,7 @@ import Entity from "@/lib/core/Entity";
 import Scene from "@/lib/core/Scene";
 import Stage from "@/lib/core/Stage";
 import { resetLabelCount } from "@/lib/utils/controls";
-import create from "zustand";
+import { create } from "zustand";
 
 export const DEFAULT_PROJECT_NAME = "Untitled Project";
 

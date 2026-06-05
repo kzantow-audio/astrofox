@@ -12,15 +12,18 @@ import {
 import classNames from "classnames";
 import { useTranslations } from "next-intl";
 import React, { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export default function PlayButtons() {
 	const t = useTranslations("player");
 	const forceUpdate = useForceUpdate();
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
-	const { liveModeEnabled, mode } = useAudioStore((state) => ({
-		liveModeEnabled: state.liveModeEnabled,
-		mode: state.mode,
-	}));
+	const { liveModeEnabled, mode } = useAudioStore(
+		useShallow((state) => ({
+			liveModeEnabled: state.liveModeEnabled,
+			mode: state.mode,
+		})),
+	);
 	const playing = player.isPlaying();
 	const hasSource = liveModeEnabled ? player.hasSource() : true;
 	const PlayPauseIcon = isVideoRecording ? Play : playing ? Pause : Play;

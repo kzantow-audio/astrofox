@@ -4,6 +4,7 @@ import { player } from "@/app/global";
 import { Volume, Volume2, Volume3, Volume4 } from "@/app/icons";
 import classNames from "classnames";
 import React, { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 const STORAGE_KEY = "astrofox.player.volume";
 const STORAGE_MUTE_KEY = "astrofox.player.volumeMuted";
@@ -14,10 +15,12 @@ const initialState = {
 };
 
 export default function VolumeControl() {
-	const { liveModeEnabled, mode } = useAudioStore((state) => ({
-		liveModeEnabled: state.liveModeEnabled,
-		mode: state.mode,
-	}));
+	const { liveModeEnabled, mode } = useAudioStore(
+		useShallow((state) => ({
+			liveModeEnabled: state.liveModeEnabled,
+			mode: state.mode,
+		})),
+	);
 	const [state, setState] = useState(initialState);
 	const { value, mute } = state;
 	const VolumeIcon = getIcon();
