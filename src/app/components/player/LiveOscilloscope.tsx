@@ -13,6 +13,7 @@ import type { RenderFrameData } from "@/lib/types";
 import classNames from "classnames";
 import { X } from "lucide-react";
 import React, { useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 
 export const LIVE_SCOPE_WIDTH = 854;
@@ -45,6 +46,7 @@ function getPoints(values: Float32Array, width: number, gain: number) {
 }
 
 export default function LiveOscilloscope() {
+	const { t } = useTranslation(undefined, { keyPrefix: "player" });
 	const { liveModeEnabled, mode } = useAudioStore(
 		useShallow((state) => ({
 			liveModeEnabled: state.liveModeEnabled,
@@ -146,7 +148,7 @@ export default function LiveOscilloscope() {
 						sideOffset={6}
 						className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
 					>
-						Close input mode
+						{t("closeInputMode")}
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>

@@ -5,6 +5,7 @@ import TimeInfo from "@/app/components/player/TimeInfo";
 import { player } from "@/app/global";
 import useSharedState from "@/app/hooks/useSharedState";
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 
 const PROGRESS_MAX = 1000;
@@ -18,6 +19,7 @@ const initialState = {
 type ProgressState = typeof initialState;
 
 export default function ProgressControl() {
+	const { t } = useTranslation(undefined, { keyPrefix: "player" });
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
 	const { liveModeEnabled, mode, sourceLabel } = useAudioStore(
 		useShallow((state) => ({
@@ -67,12 +69,12 @@ export default function ProgressControl() {
 	if (liveModeEnabled && !canSeek) {
 		const liveText =
 			mode === "microphone"
-				? sourceLabel || "Live microphone input"
+				? sourceLabel || t("liveMicrophoneInput")
 				: mode === "desktop"
-					? sourceLabel || "Live desktop audio"
+					? sourceLabel || t("liveDesktopAudio")
 					: mode === "midi"
-						? sourceLabel || "Live MIDI input"
-						: "Load an audio file or choose a live input";
+						? sourceLabel || t("liveMidiInput")
+						: t("chooseAudioOrLiveInput");
 
 		return (
 			<div className="flex flex-1 items-center">

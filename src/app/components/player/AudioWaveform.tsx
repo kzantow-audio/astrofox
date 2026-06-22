@@ -6,6 +6,7 @@ import CanvasAudio from "@/lib/canvas/CanvasAudio";
 import classNames from "classnames";
 import type React from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 
 const canvasProperties = {
@@ -19,6 +20,7 @@ const canvasProperties = {
 };
 
 export default function AudioWaveform() {
+	const { t } = useTranslation(undefined, { keyPrefix: "player" });
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
 	const { liveModeEnabled, mode } = useAudioStore(
 		useShallow((state) => ({
@@ -272,7 +274,7 @@ export default function AudioWaveform() {
 					tabIndex={hasAudio && !isVideoRecording ? 0 : -1}
 					role="button"
 					aria-disabled={!hasAudio || isVideoRecording}
-					aria-label="Audio waveform seek bar"
+					aria-label={t("audioWaveformSeekBar")}
 					width={width}
 					height={height + shadowHeight}
 					onClick={handleClick}

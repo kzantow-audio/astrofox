@@ -20,6 +20,7 @@ import Entity from "@/lib/core/Entity";
 import Scene from "@/lib/core/Scene";
 import Stage from "@/lib/core/Stage";
 import { resetLabelCount } from "@/lib/utils/controls";
+import i18n from "@/i18n/config";
 import { create } from "zustand";
 
 export const DEFAULT_PROJECT_NAME = "Untitled Project";
@@ -100,6 +101,15 @@ const PROJECT_FILE_FILTERS = [
 		mimeType: "application/json",
 	},
 ];
+
+function getProjectFileFilters() {
+	return [
+		{
+			...PROJECT_FILE_FILTERS[0],
+			name: i18n.t("fileTypes.astrofoxProject"),
+		},
+	];
+}
 
 const initialState: ProjectState = {
 	projectId: null,
@@ -249,7 +259,7 @@ function getMediaKind(element: Pick<ElementSnapshot, "name"> | null | undefined)
 function getMediaLabel(
 	element: Pick<ElementSnapshot, "displayName" | "name"> | null | undefined,
 ): string {
-	return element?.displayName || element?.name || "Media";
+	return element?.displayName || element?.name || i18n.t("relinkMedia.media");
 }
 
 function buildMediaRef(
@@ -274,7 +284,7 @@ function normalizeMediaRef(
 	return {
 		displayId: mediaRef.displayId,
 		kind: mediaRef.kind === "video" ? "video" : "image",
-		label: mediaRef.label || "Media",
+		label: mediaRef.label || i18n.t("relinkMedia.media"),
 		sourcePath:
 			normalizeMediaPath(mediaRef.sourcePath) ||
 			normalizeMediaPath(mediaRef.path) ||
@@ -585,7 +595,7 @@ function parseProjectNameFromFile(fileName = "") {
 
 function parseProjectPayload(payload: unknown, fallbackName?: string) {
 	if (!payload || typeof payload !== "object") {
-		throw new Error("Invalid project file.");
+		throw new Error(i18n.t("errors.invalidProjectFile"));
 	}
 
 	const data = payload as ProjectFilePayload;
@@ -598,7 +608,7 @@ function parseProjectPayload(payload: unknown, fallbackName?: string) {
 		data;
 
 	if (!snapshot || typeof snapshot !== "object") {
-		throw new Error("Invalid project snapshot.");
+		throw new Error(i18n.t("errors.invalidProjectSnapshot"));
 	}
 
 	return {
@@ -639,7 +649,8 @@ async function loadProjectFromPayload(payload: unknown, fallbackName?: string) {
 	if (unresolvedMediaRefs.length > 0) {
 		const count = unresolvedMediaRefs.length;
 		openRelinkMediaDialog({
-			title: `${count} media file${count === 1 ? "" : "s"} missing`,
+			titleKey: "relinkMedia.missingTitle",
+			titleOptions: { count },
 		});
 	}
 }
@@ -774,7 +785,7 @@ export function checkUnsavedChanges(
 export async function openProjectFile() {
 	try {
 		const { files, canceled } = await api.showOpenDialog({
-			filters: PROJECT_FILE_FILTERS,
+			filters: getProjectFileFilters(),
 		});
 
 		if (canceled || !files || !files.length) {
@@ -783,7 +794,7 @@ export async function openProjectFile() {
 
 		const file = files[0];
 		if (!/\.json$/i.test(file.name || "")) {
-			throw new Error("Project file must use the .json extension.");
+			throw new Error(i18n.t("errors.projectJsonExtensionRequired"));
 		}
 		const text = await file.text();
 		const payload = JSON.parse(text);
@@ -792,7 +803,7 @@ export async function openProjectFile() {
 		await loadProjectFromPayload(payload, fallbackName);
 		return true;
 	} catch (error) {
-		raiseError("Failed to open project file.", error);
+		raiseError(i18n.t("errors.openProjectFileFailed"), error);
 		return false;
 	}
 }
@@ -803,7 +814,7 @@ export function openProjectBrowser() {
 
 export function openRelinkMediaDialog(modalProps: Record<string, unknown> = {}) {
 	showModal("RelinkMediaDialog", {
-		title: "Relink Media",
+		titleKey: "relinkMedia.title",
 		...modalProps,
 	});
 }
@@ -813,21 +824,24 @@ export async function listProjects() {
 }
 
 export async function loadProjectById(_projectId: string) {
-	raiseError("Cloud projects were removed.", new Error("Use Open project."));
+	raiseError(
+		i18n.t("errors.cloudProjectsRemoved"),
+		new Error(i18n.t("errors.useOpenProject")),
+	);
 }
 
 export async function renameProjectById(_projectId: string, _name: string) {
 	raiseError(
-		"Cloud projects were removed.",
-		new Error("Use Save project to download a new file."),
+		i18n.t("errors.cloudProjectsRemoved"),
+		new Error(i18n.t("errors.useSaveProjectToDownload")),
 	);
 	return null;
 }
 
 export async function deleteProjectById(_projectId: string) {
 	raiseError(
-		"Cloud projects were removed.",
-		new Error("Use your file system to delete local project files."),
+		i18n.t("errors.cloudProjectsRemoved"),
+		new Error(i18n.t("errors.useFileSystemToDelete")),
 	);
 }
 
@@ -854,7 +868,7 @@ export async function saveProject(nameOverride?: string) {
 		const fileName = createProjectFileName(name);
 		const { fileHandle, filePath, canceled } = await api.showSaveDialog({
 			defaultPath: fileName,
-			filters: PROJECT_FILE_FILTERS,
+			filters: getProjectFileFilters(),
 		});
 
 		if (canceled) {
@@ -878,7 +892,7 @@ export async function saveProject(nameOverride?: string) {
 		logger.log("Project saved locally:", fileName);
 		return true;
 	} catch (error) {
-		raiseError("Failed to save project file.", error);
+		raiseError(i18n.t("errors.saveProjectFileFailed"), error);
 		return false;
 	}
 }
@@ -887,8 +901,8 @@ export async function relinkMediaRef(mediaRef: MediaRef) {
 	try {
 		const isVideo = mediaRef.kind === "video";
 		const filters = isVideo
-			? [{ name: "Video files", extensions: ["mp4", "webm", "ogv"] }]
-			: [{ name: "Image files", extensions: ["jpg", "jpeg", "png", "gif"] }];
+			? [{ name: i18n.t("fileTypes.videoFiles"), extensions: ["mp4", "webm", "ogv"] }]
+			: [{ name: i18n.t("fileTypes.imageFiles"), extensions: ["jpg", "jpeg", "png", "gif"] }];
 		const { files, canceled } = await api.showOpenDialog({ filters });
 
 		if (canceled || !files || !files.length) {
@@ -914,7 +928,7 @@ export async function relinkMediaRef(mediaRef: MediaRef) {
 				),
 		);
 	} catch (error) {
-		raiseError("Failed to relink media.", error);
+		raiseError(i18n.t("errors.relinkMediaFailed"), error);
 	}
 }
 

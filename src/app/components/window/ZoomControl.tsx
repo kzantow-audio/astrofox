@@ -6,9 +6,13 @@ import useStage, {
 } from "@/app/actions/stage";
 import { Button } from "@/components/ui/button";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Zoom() {
+	const { t } = useTranslation(undefined, { keyPrefix: "zoom" });
 	const { width, height, zoom } = useStage((state) => state);
+	const canvasSizeLabel = t("resetZoomToCanvasSize", { width, height });
+	const zoomLevelLabel = t("zoomLevel", { zoom: ~~(zoom * 100) });
 
 	return (
 		<div
@@ -19,6 +23,7 @@ export default function Zoom() {
 			<Button
 				variant="ghost"
 				className="h-7 bg-transparent p-0 text-inherit hover:bg-transparent"
+				aria-label={canvasSizeLabel}
 				onClick={() => setZoom(1)}
 			>
 				{`${width} x ${height}`}
@@ -27,6 +32,7 @@ export default function Zoom() {
 				variant="ghost"
 				size="sm"
 				className="w-8 h-7 text-sm bg-transparent text-inherit p-0 hover:bg-primary"
+				aria-label={t("zoomOut")}
 				onClick={zoomOut}
 			>
 				{"\uff0d"}
@@ -37,6 +43,7 @@ export default function Zoom() {
 				}
 				type="range"
 				name="zoom"
+				aria-label={zoomLevelLabel}
 				value={zoom}
 				onChange={(e) => setZoom(Number(e.target.value))}
 				min={0.1}
@@ -47,6 +54,7 @@ export default function Zoom() {
 				variant="ghost"
 				size="sm"
 				className="w-8 h-7 text-sm bg-transparent text-inherit p-0 hover:bg-primary"
+				aria-label={t("zoomIn")}
 				onClick={zoomIn}
 			>
 				{"\uff0b"}
@@ -54,6 +62,7 @@ export default function Zoom() {
 			<Button
 				variant="ghost"
 				className="w-12 h-7 text-center bg-transparent text-inherit p-0 hover:bg-transparent"
+				aria-label={t("fitToScreen")}
 				onClick={fitToScreen}
 			>
 				{`${~~(zoom * 100)}%`}

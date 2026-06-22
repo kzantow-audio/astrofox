@@ -22,6 +22,7 @@ import { ignoreEvents } from "@/lib/utils/react";
 import { Download, PictureInPicture2 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import DisplayTransformOverlay from "./DisplayTransformOverlay";
 import { isTransformable2DDisplay } from "./displayTransform";
@@ -42,6 +43,7 @@ function acceptStageDrag(event: React.DragEvent) {
 }
 
 export default function Stage() {
+	const { t } = useTranslation(undefined, { keyPrefix: "stage" });
 	const [width, height, backgroundColor, zoom] = useStage(
 		useShallow((state) => [
 			state.width,
@@ -247,6 +249,12 @@ export default function Stage() {
 		void toggleStagePictureInPicture();
 	}
 
+	const pictureInPictureLabel = isStagePictureInPictureActive
+		? t("closePictureInPicture")
+		: t("openPictureInPicture");
+	const layerTransformLabel = t("layerTransform");
+	const cameraControlLabel = t("cameraControl");
+
 	return (
 		<div
 			className={"flex flex-col flex-1 min-w-0 min-h-0 overflow-auto relative"}
@@ -294,6 +302,7 @@ export default function Stage() {
 										isStagePictureInPictureActive ? "default" : "outline"
 									}
 									size="icon-sm"
+									aria-label={pictureInPictureLabel}
 									className="shadow-xl"
 									disabled={!pictureInPictureSupported}
 									onClick={handleStagePictureInPictureToggle}
@@ -306,9 +315,7 @@ export default function Stage() {
 								sideOffset={6}
 								className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
 							>
-								{isStagePictureInPictureActive
-									? "Close picture in picture"
-									: "Open picture in picture"}
+								{pictureInPictureLabel}
 							</TooltipContent>
 						</Tooltip>
 						<Tooltip>
@@ -321,6 +328,7 @@ export default function Stage() {
 											: "outline"
 									}
 									size="icon-sm"
+									aria-label={layerTransformLabel}
 									className="shadow-xl"
 									disabled={!transformableDisplaySelected}
 									onClick={handleDisplayTransformModeToggle}
@@ -333,7 +341,7 @@ export default function Stage() {
 								sideOffset={6}
 								className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
 							>
-								{"Layer transform"}
+								{layerTransformLabel}
 							</TooltipContent>
 						</Tooltip>
 						<Tooltip>
@@ -346,6 +354,7 @@ export default function Stage() {
 											: "outline"
 									}
 									size="icon-sm"
+									aria-label={cameraControlLabel}
 									className="shadow-xl"
 									disabled={!activeSceneHas3DDisplays}
 									onClick={handleCameraModeToggle}
@@ -358,7 +367,7 @@ export default function Stage() {
 								sideOffset={6}
 								className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
 							>
-								{"Camera control"}
+								{cameraControlLabel}
 							</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>

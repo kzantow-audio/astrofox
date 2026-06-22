@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { analyzer, api, audioContext, logger, player } from "@/app/global";
+import i18n from "@/i18n/config";
 import { loadAudioData } from "@/lib/utils/audio";
 import { trimChars } from "@/lib/utils/string";
 import { create } from "zustand";
@@ -63,8 +64,17 @@ const AUDIO_FILE_FILTERS = [
 		extensions: ["aac", "flac", "mp3", "m4a", "opus", "ogg", "wav"],
 	},
 ];
-const DESKTOP_AUDIO_MISSING_MESSAGE =
-	"No audio track was shared. In Chrome or Edge, choose a tab with Share tab audio enabled, or choose Entire Screen with Share system audio enabled. Window sharing often has no audio.";
+const DESKTOP_AUDIO_MISSING_ERROR = "DESKTOP_AUDIO_MISSING";
+const NO_MIDI_INPUTS_ERROR = "NO_MIDI_INPUTS";
+
+function getAudioFileFilters() {
+	return [
+		{
+			...AUDIO_FILE_FILTERS[0],
+			name: i18n.t("fileTypes.audioFiles"),
+		},
+	];
+}
 
 let midiAccess: MIDIAccess | null = null;
 let activeMidiInput: MIDIInput | null = null;
@@ -90,7 +100,10 @@ function resetSourceState(mode: "file" | "microphone" | "midi" | "desktop") {
 	});
 }
 
-function getMicrophoneLabel(stream: MediaStream, fallback = "Microphone") {
+function getMicrophoneLabel(
+	stream: MediaStream,
+	fallback = i18n.t("liveMode.microphone"),
+) {
 	const [track] = stream.getAudioTracks();
 	return track?.label || fallback;
 }
@@ -98,7 +111,7 @@ function getMicrophoneLabel(stream: MediaStream, fallback = "Microphone") {
 function toDeviceOption(device: MediaDeviceInfo, index: number) {
 	return {
 		id: device.deviceId,
-		label: device.label || `Microphone ${index + 1}`,
+		label: device.label || i18n.t("audio.microphoneDevice", { count: index + 1 }),
 	};
 }
 
@@ -118,7 +131,7 @@ function getPreferredMicrophoneId(
 function toMidiOption(input: MIDIInput) {
 	return {
 		id: input.id,
-		label: input.name || input.manufacturer || "MIDI input",
+		label: input.name || input.manufacturer || i18n.t("audio.midiInput"),
 	};
 }
 
@@ -140,7 +153,7 @@ function handleMidiMessage(event: MIDIMessageEvent) {
 
 async function ensureMidiAccess() {
 	if (typeof navigator === "undefined" || !navigator.requestMIDIAccess) {
-		throw new Error("Web MIDI is not supported in this browser.");
+		throw new Error(i18n.t("errors.webMidiUnsupported"));
 	}
 
 	if (!midiAccess) {
@@ -204,7 +217,7 @@ export async function inspectAudioFile(file: File) {
 
 export async function chooseAudioFile() {
 	const { files, canceled } = await api.showOpenDialog({
-		filters: AUDIO_FILE_FILTERS,
+		filters: getAudioFileFilters(),
 	});
 
 	if (canceled || !files?.length) {
@@ -344,7 +357,7 @@ export async function loadAudioFile(file: File | string, play?: boolean) {
 			loading: false,
 		});
 	} catch (error) {
-		raiseError("Invalid audio file.", error);
+		raiseError(i18n.t("errors.invalidAudioFile"), error);
 		updateAudioState({ loading: false });
 	}
 }
@@ -354,7 +367,7 @@ export async function connectMicrophone(deviceId?: string) {
 		typeof navigator === "undefined" ||
 		!navigator.mediaDevices?.getUserMedia
 	) {
-		raiseError("Microphone input is not supported in this browser.");
+		raiseError(i18n.t("errors.microphoneUnsupported"));
 		return false;
 	}
 
@@ -386,7 +399,7 @@ export async function connectMicrophone(deviceId?: string) {
 		player.setInputGain(audioStore.getState().liveInputGain / 100);
 
 		appStore.setState({
-			statusText: trimChars(`Live: ${label}`),
+			statusText: trimChars(i18n.t("status.live", { label })),
 		});
 
 		updateAudioState({
@@ -408,7 +421,7 @@ export async function connectMicrophone(deviceId?: string) {
 
 		return true;
 	} catch (error) {
-		raiseError("Failed to access the microphone.", error);
+		raiseError(i18n.t("errors.microphoneAccessFailed"), error);
 		resetSourceState("microphone");
 		return false;
 	}
@@ -419,7 +432,7 @@ export async function connectDesktopAudio() {
 		typeof navigator === "undefined" ||
 		!navigator.mediaDevices?.getDisplayMedia
 	) {
-		raiseError("Desktop audio capture is not supported in this browser.");
+		raiseError(i18n.t("errors.desktopAudioUnsupported"));
 		return false;
 	}
 
@@ -443,19 +456,19 @@ export async function connectDesktopAudio() {
 		}
 
 		if (stream.getAudioTracks().length === 0) {
-			throw new Error(DESKTOP_AUDIO_MISSING_MESSAGE);
+			throw new Error(DESKTOP_AUDIO_MISSING_ERROR);
 		}
 
 		stream.getAudioTracks()[0].addEventListener("ended", () => {
 			setLiveModeEnabled(false);
 		});
 
-		const label = stream.getAudioTracks()[0]?.label || "Desktop Audio";
+		const label = stream.getAudioTracks()[0]?.label || i18n.t("liveMode.desktopAudio");
 		player.useDesktopAudio(stream, analyzer.analyzer, label);
 		player.setInputGain(audioStore.getState().liveInputGain / 100);
 
 		appStore.setState({
-			statusText: trimChars(`Live: ${label}`),
+			statusText: trimChars(i18n.t("status.live", { label })),
 		});
 
 		updateAudioState({
@@ -479,16 +492,16 @@ export async function connectDesktopAudio() {
 
 		if (
 			error instanceof Error &&
-			error.message === DESKTOP_AUDIO_MISSING_MESSAGE
+			error.message === DESKTOP_AUDIO_MISSING_ERROR
 		) {
-			raiseError(DESKTOP_AUDIO_MISSING_MESSAGE, error, {
+			raiseError(i18n.t("errors.desktopAudioMissing"), undefined, {
 				logLevel: "warn",
 			});
 			resetSourceState("desktop");
 			return false;
 		}
 
-		raiseError("Failed to capture desktop audio.", error);
+		raiseError(i18n.t("errors.desktopAudioCaptureFailed"), error);
 		resetSourceState("desktop");
 		return false;
 	}
@@ -510,17 +523,17 @@ export async function connectMidiInput(inputId?: string) {
 		await syncMidiInputs();
 
 		if (!targetInput) {
-			throw new Error("No MIDI inputs were found.");
+			throw new Error(NO_MIDI_INPUTS_ERROR);
 		}
 
 		activeMidiInput = targetInput;
 		activeMidiInput.onmidimessage = handleMidiMessage;
 
-		const label = targetInput.name || targetInput.manufacturer || "MIDI input";
+		const label = targetInput.name || targetInput.manufacturer || i18n.t("audio.midiInput");
 		player.useMidi(label);
 
 		appStore.setState({
-			statusText: trimChars(`Live MIDI: ${label}`),
+			statusText: trimChars(i18n.t("status.liveMidi", { label })),
 		});
 
 		updateAudioState({
@@ -539,11 +552,15 @@ export async function connectMidiInput(inputId?: string) {
 		return true;
 	} catch (error) {
 		const expectedMissingInput =
-			error instanceof Error && error.message === "No MIDI inputs were found.";
+			error instanceof Error && error.message === NO_MIDI_INPUTS_ERROR;
 
-		raiseError("Failed to connect a MIDI input.", error, {
+		raiseError(
+			i18n.t("errors.midiConnectFailed"),
+			expectedMissingInput ? new Error(i18n.t("errors.noMidiInputsFound")) : error,
+			{
 			logLevel: expectedMissingInput ? "warn" : "error",
-		});
+			},
+		);
 		resetSourceState("midi");
 		return false;
 	}
@@ -582,16 +599,16 @@ export function setLiveModeEnabled(enabled: boolean) {
 	appStore.setState({
 		statusText:
 			liveInputMode === "microphone"
-				? "Input mode: choose a microphone"
+				? i18n.t("status.inputModeChooseMicrophone")
 				: liveInputMode === "desktop"
-					? "Input mode: desktop audio"
-					: "Input mode: choose a MIDI input",
+					? i18n.t("status.inputModeDesktopAudio")
+					: i18n.t("status.inputModeChooseMidi"),
 	});
 }
 
 export async function openAudioFile(play?: boolean) {
 	const { files, canceled } = await api.showOpenDialog({
-		filters: AUDIO_FILE_FILTERS,
+		filters: getAudioFileFilters(),
 	});
 
 	if (!canceled && files && files.length) {

@@ -9,6 +9,7 @@ interface ModalWindowProps {
 	className?: string;
 	title?: string;
 	titleKey?: string;
+	titleOptions?: Record<string, unknown>;
 	buttons?: string[];
 	showCloseButton?: boolean;
 	onClose?: (value?: string) => void;
@@ -19,13 +20,14 @@ export default function ModalWindow({
 	className,
 	title,
 	titleKey,
+	titleOptions,
 	buttons,
 	showCloseButton: _showCloseButton = true,
 	onClose,
 	children,
 }: ModalWindowProps) {
 	const { t } = useTranslation();
-	const resolvedTitle = titleKey ? t(titleKey) : title;
+	const resolvedTitle = titleKey ? String(t(titleKey, titleOptions)) : title;
 
 	return (
 		<div

@@ -52,12 +52,12 @@ function labelKey(label: string) {
     .join('');
 }
 
-export function translateLabel(t: TFunction, label: unknown) {
+export function translateLabel(t: TFunction, label: unknown): string {
   if (typeof label !== 'string' || label.length === 0) {
-    return label;
+    return label == null ? '' : String(label);
   }
 
-  return t(`labels.${labelKey(label)}`, { defaultValue: label });
+  return String(t(`labels.${labelKey(label)}`, { defaultValue: label }));
 }
 
 export function translateGeneratedName(t: TFunction, name: string) {

@@ -49,6 +49,7 @@ export default function SaveVideoDialog({
 }: SaveVideoDialogProps) {
 	const { t } = useTranslation(undefined, { keyPrefix: "saveVideo" });
 	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
+	const { t: te } = useTranslation(undefined, { keyPrefix: "errors" });
 	const [fileHandle, setFileHandle] = useState(initialFileHandle);
 	const [filePath, setFilePath] = useState(initialFilePath);
 	const [audioSource, setAudioSource] = useState<File | null>(
@@ -104,7 +105,7 @@ export default function SaveVideoDialog({
 			setSelectedEndTime(audio.duration);
 			setValidationMessage("");
 		} catch (error) {
-			raiseError("Failed to choose an audio file.", error);
+			raiseError(te("chooseAudioFileFailed"), error);
 		} finally {
 			setIsChoosingAudio(false);
 		}
@@ -121,7 +122,7 @@ export default function SaveVideoDialog({
 				setFilePath(selection.filePath || selection.defaultPath);
 			}
 		} catch (error) {
-			raiseError("Failed to choose a video save location.", error);
+			raiseError(te("chooseVideoSaveLocationFailed"), error);
 		} finally {
 			setIsChoosingLocation(false);
 		}

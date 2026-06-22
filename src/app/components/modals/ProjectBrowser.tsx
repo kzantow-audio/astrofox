@@ -25,11 +25,13 @@ interface ProjectBrowserProps {
 export default function ProjectBrowser({ onClose }: ProjectBrowserProps) {
 	const { t } = useTranslation(undefined, { keyPrefix: "projectBrowser" });
 	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
+	const { t: tt } = useTranslation(undefined, { keyPrefix: "titleBar" });
 	const currentProjectId = useProject((state) => state.projectId);
+	const defaultProjectName = tt("defaultProjectName");
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const [createName, setCreateName] = useState(DEFAULT_PROJECT_NAME);
+	const [createName, setCreateName] = useState(defaultProjectName);
 	const [renameName, setRenameName] = useState("");
 	const [error, setError] = useState("");
 
@@ -76,7 +78,11 @@ export default function ProjectBrowser({ onClose }: ProjectBrowserProps) {
 	}
 
 	async function handleCreateProject() {
-		const name = createName.trim() || DEFAULT_PROJECT_NAME;
+		const draftName = createName.trim();
+		const name =
+			!draftName || draftName === defaultProjectName
+				? DEFAULT_PROJECT_NAME
+				: draftName;
 
 		await newProject();
 		const saved = await saveProject(name);

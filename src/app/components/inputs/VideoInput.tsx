@@ -12,6 +12,7 @@ import { ignoreEvents } from "@/lib/utils/react";
 import classNames from "classnames";
 import type React from "react";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 function isFileUrlSource(src: string) {
   return /^file:\/\//i.test(src || "");
@@ -93,6 +94,8 @@ interface VideoInputProps {
 }
 
 export default function VideoInput({ name, value, onChange }: VideoInputProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: "inputs" });
+  const { t: te } = useTranslation(undefined, { keyPrefix: "errors" });
   const video = useRef<HTMLVideoElement>(null);
   const hasVideo = value !== BLANK_IMAGE;
 
@@ -115,7 +118,7 @@ export default function VideoInput({ name, value, onChange }: VideoInputProps) {
         sourcePath: sourcePath || "",
       });
     } catch (error) {
-      raiseError("Invalid video file.", error);
+      raiseError(te("invalidVideoFile"), error);
     }
   }
 
@@ -127,7 +130,7 @@ export default function VideoInput({ name, value, onChange }: VideoInputProps) {
 
   async function handleClick() {
     const { files, canceled } = await api.showOpenDialog({
-      filters: [{ name: "Video files", extensions: ["mp4", "webm", "ogv"] }],
+      filters: [{ name: t("videoFiles"), extensions: ["mp4", "webm", "ogv"] }],
     });
 
     if (!canceled && files && files.length) {
@@ -182,7 +185,7 @@ export default function VideoInput({ name, value, onChange }: VideoInputProps) {
               sideOffset={6}
               className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
             >
-              Open file
+              {t("openFile")}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -205,7 +208,7 @@ export default function VideoInput({ name, value, onChange }: VideoInputProps) {
               sideOffset={6}
               className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
             >
-              Remove video
+              {t("removeVideo")}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

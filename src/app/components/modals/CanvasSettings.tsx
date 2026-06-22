@@ -1,4 +1,7 @@
-import useProject, { updateProjectName } from "@/app/actions/project";
+import useProject, {
+	DEFAULT_PROJECT_NAME,
+	updateProjectName,
+} from "@/app/actions/project";
 import useStage, { updateCanvas } from "@/app/actions/stage";
 import { Setting, Settings } from "@/app/components/controls";
 import { Button } from "@/components/ui/button";
@@ -85,6 +88,7 @@ function getCanvasDimensions(
 export default function CanvasSettings({ onClose }: CanvasSettingsProps) {
 	const { t } = useTranslation(undefined, { keyPrefix: "canvasSettings" });
 	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
+	const { t: tt } = useTranslation(undefined, { keyPrefix: "titleBar" });
 
 	const aspectOptions: AspectOption[] = [
 		{ label: t("square"), value: "1:1", widthRatio: 1, heightRatio: 1 },
@@ -116,8 +120,12 @@ export default function CanvasSettings({ onClose }: CanvasSettingsProps) {
 
 	const stageConfig = useStage((state) => state);
 	const projectName = useProject((state) => state.projectName);
+	const defaultProjectName = tt("defaultProjectName");
 	const [state, setState] = useState({
-		projectName,
+		projectName:
+			projectName && projectName !== DEFAULT_PROJECT_NAME
+				? projectName
+				: defaultProjectName,
 		backgroundColor: stageConfig.backgroundColor,
 		baseSize: getNearestBaseSize(
 			Math.min(stageConfig.width, stageConfig.height),
@@ -141,7 +149,11 @@ export default function CanvasSettings({ onClose }: CanvasSettingsProps) {
 	}
 
 	async function handleSave() {
-		updateProjectName(draftProjectName);
+		updateProjectName(
+			draftProjectName.trim() === defaultProjectName
+				? DEFAULT_PROJECT_NAME
+				: draftProjectName,
+		);
 		await updateCanvas(width, height, backgroundColor);
 		onClose();
 	}

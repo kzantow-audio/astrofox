@@ -21,6 +21,7 @@ import {
 	renderBackend,
 	renderer,
 } from "@/app/global";
+import i18n from "@/i18n/config";
 import Plugin from "@/lib/core/Plugin";
 import * as displays from "@/lib/displays";
 import * as effects from "@/lib/effects";
@@ -227,7 +228,7 @@ function getVideoRecordingSetup(): {
 	extension: string;
 } | null {
 	if (activeVideoRecorder && activeVideoRecorder.state === "recording") {
-		raiseError("A video recording is already in progress.");
+		raiseError(i18n.t("errors.videoRecordingInProgress"));
 		return null;
 	}
 
@@ -235,21 +236,21 @@ function getVideoRecordingSetup(): {
 		typeof window === "undefined" ||
 		typeof window.MediaRecorder === "undefined"
 	) {
-		raiseError("Video recording is not supported in this browser.");
+		raiseError(i18n.t("errors.videoRecordingUnsupported"));
 		return null;
 	}
 
 	const canvas = renderBackend.getCanvas?.() as CaptureStreamCanvas | null;
 
 	if (!canvas || typeof canvas.captureStream !== "function") {
-		raiseError("Failed to access the stage canvas for video recording.");
+		raiseError(i18n.t("errors.stageCanvasVideoAccessFailed"));
 		return null;
 	}
 
 	const mimeType = getSupportedVideoMimeType();
 
 	if (!mimeType) {
-		raiseError("No supported video format found for recording.");
+		raiseError(i18n.t("errors.noSupportedVideoFormat"));
 		return null;
 	}
 
@@ -316,7 +317,7 @@ export async function saveImage() {
 
 			logger.log("Image saved:", fileName);
 		} catch (error) {
-			raiseError("Failed to save image file.", error);
+			raiseError(i18n.t("errors.saveImageFailed"), error);
 		}
 	}
 }
@@ -340,7 +341,7 @@ export async function saveVideo() {
 
 	showModal(
 		"SaveVideoDialog",
-		{ title: "Save video", showCloseButton: false },
+		{ titleKey: "saveVideo.saveVideo", showCloseButton: false },
 		{
 			fileHandle: null,
 			filePath: "",
@@ -408,14 +409,14 @@ export async function startVideoRecording({
 	}
 
 	if (!player.hasAudio()) {
-		raiseError("Choose an audio track before saving video.");
+		raiseError(i18n.t("errors.chooseAudioBeforeSavingVideo"));
 		return false;
 	}
 
 	const totalDuration = player.getDuration();
 
 	if (!Number.isFinite(totalDuration) || totalDuration <= 0) {
-		raiseError("Failed to determine audio duration for video recording.");
+		raiseError(i18n.t("errors.videoDurationFailed"));
 		return false;
 	}
 
@@ -423,7 +424,7 @@ export async function startVideoRecording({
 	const clampedEndTime = Math.min(totalDuration, endTime ?? totalDuration);
 
 	if (clampedEndTime <= clampedStartTime) {
-		raiseError("Video end time must be later than the start time.");
+		raiseError(i18n.t("errors.videoEndBeforeStart"));
 		return false;
 	}
 
@@ -513,7 +514,7 @@ export async function startVideoRecording({
 		recorder.onerror = (event: Event & { error?: DOMException }) => {
 			recordingFailed = true;
 			cleanup();
-			raiseError("Failed to record video.", event?.error || event);
+			raiseError(i18n.t("errors.recordVideoFailed"), event?.error || event);
 		};
 
 		recorder.onstop = async () => {
@@ -532,7 +533,7 @@ export async function startVideoRecording({
 
 				logger.log("Video saved:", fileName);
 			} catch (error) {
-				raiseError("Failed to save video file.", error);
+				raiseError(i18n.t("errors.saveVideoFileFailed"), error);
 			} finally {
 				cleanup();
 			}
@@ -570,28 +571,28 @@ export async function startVideoRecording({
 
 		activeVideoRecorder = null;
 		appStore.setState({ isVideoRecording: false });
-		raiseError("Failed to start video recording.", error);
+		raiseError(i18n.t("errors.startVideoRecordingFailed"), error);
 		return false;
 	}
 }
 
 export async function startStagePictureInPicture() {
 	if (!isStagePictureInPictureSupported()) {
-		raiseError("Picture in picture is not supported in this browser.");
+		raiseError(i18n.t("errors.pictureInPictureUnsupported"));
 		return false;
 	}
 
 	const canvas = renderBackend.getCanvas?.() as CaptureStreamCanvas | null;
 
 	if (!canvas || typeof canvas.captureStream !== "function") {
-		raiseError("Failed to access the stage canvas for picture in picture.");
+		raiseError(i18n.t("errors.stageCanvasPictureInPictureAccessFailed"));
 		return false;
 	}
 
 	const video = ensureStagePictureInPictureVideo();
 
 	if (!video) {
-		raiseError("Failed to initialize picture in picture.");
+		raiseError(i18n.t("errors.pictureInPictureInitFailed"));
 		return false;
 	}
 
@@ -614,7 +615,7 @@ export async function startStagePictureInPicture() {
 		return true;
 	} catch (error) {
 		handleStagePictureInPictureLeave();
-		raiseError("Failed to start picture in picture.", error);
+		raiseError(i18n.t("errors.startPictureInPictureFailed"), error);
 		return false;
 	}
 }
@@ -636,7 +637,7 @@ export async function stopStagePictureInPicture() {
 
 		return true;
 	} catch (error) {
-		raiseError("Failed to close picture in picture.", error);
+		raiseError(i18n.t("errors.closePictureInPictureFailed"), error);
 		return false;
 	}
 }

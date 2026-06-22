@@ -12,6 +12,7 @@ import {
 import CanvasMeter from "@/lib/canvas/CanvasMeter";
 import type Display from "@/lib/core/Display";
 import React, { useRef, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ReactorInputProps {
 	display: Display;
@@ -30,6 +31,7 @@ export default function ReactorInput({
 	height = 10,
 	color = PRIMARY_COLOR,
 }: ReactorInputProps) {
+	const { t } = useTranslation(undefined, { keyPrefix: "inputs" });
 	const canvas = useRef<HTMLCanvasElement>(null);
 	const meter = useRef<CanvasMeter | null>(null);
 	const lastValue = useRef(value);
@@ -103,7 +105,7 @@ export default function ReactorInput({
 						sideOffset={6}
 						className="rounded bg-neutral-950 px-3 py-2 text-sm text-neutral-200 shadow-lg z-100"
 					>
-						Disable reactor
+						{t("disableReactor")}
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>

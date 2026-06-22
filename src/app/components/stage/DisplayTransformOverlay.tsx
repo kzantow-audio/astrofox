@@ -1,6 +1,7 @@
 import { updateElementProperties } from "@/app/actions/scenes";
 import { stage } from "@/app/global";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
 	type DisplayTransformFrame,
 	getDisplayTransformFrame,
@@ -344,6 +345,7 @@ export default function DisplayTransformOverlay({
 	stageHeight,
 	zoom,
 }: DisplayTransformOverlayProps) {
+	const { t } = useTranslation(undefined, { keyPrefix: "stage" });
 	const resolvedFrame = React.useMemo(
 		() =>
 			getDisplayTransformFrame(
@@ -498,6 +500,11 @@ export default function DisplayTransformOverlay({
 		return null;
 	}
 
+	const resizeTopLabel = t("resizeTop");
+	const resizeRightLabel = t("resizeRight");
+	const resizeBottomLabel = t("resizeBottom");
+	const resizeLeftLabel = t("resizeLeft");
+
 	const frame = draftFrame;
 	const centerX = stageWidth / 2 + frame.x;
 	const centerY = stageHeight / 2 + frame.y;
@@ -530,31 +537,31 @@ export default function DisplayTransformOverlay({
 				</div>
 				<button
 					type="button"
-					aria-label="Move layer"
+					aria-label={t("moveLayer")}
 					className="absolute inset-[10px] cursor-move pointer-events-auto bg-transparent"
 					onPointerDown={startInteraction("move")}
 				/>
 				<button
 					type="button"
-					aria-label="Resize top"
+					aria-label={resizeTopLabel}
 					className="absolute -top-[5px] left-[10px] right-[10px] h-2.5 cursor-ns-resize pointer-events-auto bg-transparent"
 					onPointerDown={startInteraction("n")}
 				/>
 				<button
 					type="button"
-					aria-label="Resize right"
+					aria-label={resizeRightLabel}
 					className="absolute -right-[5px] top-[10px] bottom-[10px] w-2.5 cursor-ew-resize pointer-events-auto bg-transparent"
 					onPointerDown={startInteraction("e")}
 				/>
 				<button
 					type="button"
-					aria-label="Resize bottom"
+					aria-label={resizeBottomLabel}
 					className="absolute -bottom-[5px] left-[10px] right-[10px] h-2.5 cursor-ns-resize pointer-events-auto bg-transparent"
 					onPointerDown={startInteraction("s")}
 				/>
 				<button
 					type="button"
-					aria-label="Resize left"
+					aria-label={resizeLeftLabel}
 					className="absolute -left-[5px] top-[10px] bottom-[10px] w-2.5 cursor-ew-resize pointer-events-auto bg-transparent"
 					onPointerDown={startInteraction("w")}
 				/>
@@ -563,49 +570,49 @@ export default function DisplayTransformOverlay({
 						handle: "nw" as const,
 						className:
 							"left-0 top-0 -translate-x-1/2 -translate-y-1/2 cursor-nwse-resize",
-						label: "Resize top left",
+						label: t("resizeTopLeft"),
 					},
 					{
 						handle: "ne" as const,
 						className:
 							"right-0 top-0 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize",
-						label: "Resize top right",
+						label: t("resizeTopRight"),
 					},
 					{
 						handle: "se" as const,
 						className:
 							"bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize",
-						label: "Resize bottom right",
+						label: t("resizeBottomRight"),
 					},
 					{
 						handle: "sw" as const,
 						className:
 							"bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize",
-						label: "Resize bottom left",
+						label: t("resizeBottomLeft"),
 					},
 					{
 						handle: "n" as const,
 						className:
 							"left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize",
-						label: "Resize top edge",
+						label: t("resizeTopEdge"),
 					},
 					{
 						handle: "e" as const,
 						className:
 							"right-0 top-1/2 translate-x-1/2 -translate-y-1/2 cursor-ew-resize",
-						label: "Resize right edge",
+						label: t("resizeRightEdge"),
 					},
 					{
 						handle: "s" as const,
 						className:
 							"bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-ns-resize",
-						label: "Resize bottom edge",
+						label: t("resizeBottomEdge"),
 					},
 					{
 						handle: "w" as const,
 						className:
 							"left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize",
-						label: "Resize left edge",
+						label: t("resizeLeftEdge"),
 					},
 				].map((item) => (
 					<button

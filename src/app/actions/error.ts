@@ -41,7 +41,7 @@ export function raiseError(
 
 	errorStore.setState({ message, error: error ? String(error) : null });
 
-	showModal("ErrorDialog", { title: "Error" });
+	showModal("ErrorDialog", { titleKey: "errors.title" });
 }
 
 export default errorStore;

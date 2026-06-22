@@ -1,6 +1,7 @@
 import EventEmitter from "@/lib/core/EventEmitter";
 import type { EventCallback } from "@/lib/types";
 import env from "@/app/env";
+import i18n from "@/i18n/config";
 import jsmediatags from "jsmediatags/dist/jsmediatags.min.js";
 
 const events = new EventEmitter();
@@ -52,7 +53,7 @@ function buildPickerTypes(
 	if (!filters.length) return undefined;
 
 	return filters.map((filter) => ({
-		description: filter.name || "Files",
+		description: filter.name || i18n.t("fileTypes.files"),
 		accept: {
 			[filter.mimeType || "application/octet-stream"]: (
 				filter.extensions || []
@@ -157,7 +158,7 @@ export function send(channel: string, data?: unknown) {
 }
 
 export async function invoke() {
-	throw new Error("IPC invoke is not available in web mode.");
+	throw new Error(i18n.t("errors.ipcInvokeUnavailable"));
 }
 
 export function log(...args: unknown[]) {
@@ -225,7 +226,7 @@ export async function readAudioFile(file: File | FileHandle) {
 	const audioFile = await toFile(file);
 
 	if (!audioFile) {
-		throw new Error("No audio file provided.");
+		throw new Error(i18n.t("errors.noAudioFileProvided"));
 	}
 
 	let { type } = audioFile;
@@ -235,7 +236,11 @@ export async function readAudioFile(file: File | FileHandle) {
 	}
 
 	if (!/^audio/.test(type)) {
-		throw new Error(`Unrecognized audio type: ${type || "unknown"}`);
+		throw new Error(
+			i18n.t("errors.unrecognizedAudioType", {
+				type: type || i18n.t("common.unknown"),
+			}),
+		);
 	}
 
 	return audioFile.arrayBuffer();
@@ -265,12 +270,12 @@ export async function readImageFile(file: File | FileHandle) {
 	const imageFile = await toFile(file);
 
 	if (!imageFile) {
-		throw new Error("No image file provided.");
+		throw new Error(i18n.t("errors.noImageFileProvided"));
 	}
 
 	return new Promise<string | ArrayBuffer | null>((resolve, reject) => {
 		const reader = new FileReader();
-		reader.onerror = () => reject(new Error("Failed to read image file."));
+		reader.onerror = () => reject(new Error(i18n.t("errors.readImageFileFailed")));
 		reader.onload = () => resolve(reader.result);
 		reader.readAsDataURL(imageFile);
 	});
@@ -280,16 +285,16 @@ export async function readVideoFile(file: File | FileHandle) {
 	const videoFile = await toFile(file);
 
 	if (!videoFile) {
-		throw new Error("No video file provided.");
+		throw new Error(i18n.t("errors.noVideoFileProvided"));
 	}
 
 	if (videoFile.type && !/^video/.test(videoFile.type)) {
-		throw new Error(`Unrecognized video type: ${videoFile.type}`);
+		throw new Error(i18n.t("errors.unrecognizedVideoType", { type: videoFile.type }));
 	}
 
 	return new Promise<string | ArrayBuffer | null>((resolve, reject) => {
 		const reader = new FileReader();
-		reader.onerror = () => reject(new Error("Failed to read video file."));
+		reader.onerror = () => reject(new Error(i18n.t("errors.readVideoFileFailed")));
 		reader.onload = () => resolve(reader.result);
 		reader.readAsDataURL(videoFile);
 	});
@@ -340,7 +345,7 @@ export function getPlugins() {
 }
 
 export function spawnProcess() {
-	throw new Error("Process spawning is not available in web mode.");
+	throw new Error(i18n.t("errors.processSpawningUnavailable"));
 }
 
 export function openDevTools() {}
