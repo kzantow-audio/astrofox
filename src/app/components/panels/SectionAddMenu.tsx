@@ -2,6 +2,7 @@ import { setActiveElementId } from "@/app/actions/app";
 import { addElement } from "@/app/actions/scenes";
 import { library } from "@/app/global";
 import { Plus } from "@/app/icons";
+import { translateLabel } from "@/i18n/labels";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,6 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
 
 interface MenuCategory {
 	label: string;
@@ -77,6 +79,7 @@ export default function SectionAddMenu({
 	categories,
 	ariaLabel,
 }: SectionAddMenuProps) {
+	const { t } = useTranslation();
 	const libraryItems = getLibraryItems(entityType);
 
 	function handleSelect(Entity: EntityConstructor) {
@@ -121,7 +124,7 @@ export default function SectionAddMenu({
 										className="min-w-44 rounded text-sm focus:bg-primary focus:text-neutral-100"
 										onClick={() => handleSelect(item.Entity)}
 									>
-										{item.label}
+										{translateLabel(t, item.label)}
 									</DropdownMenuItem>
 								))}
 							</DropdownMenuGroup>

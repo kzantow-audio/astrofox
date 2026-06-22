@@ -10,12 +10,12 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import classNames from "classnames";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
 import React from "react";
 
 export default function ToggleButtons() {
-	const t = useTranslations("player");
+	const { t } = useTranslation(undefined, { keyPrefix: "player" });
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
 	const liveModeEnabled = useAudioStore((state) => state.liveModeEnabled);
 	const forceUpdate = useForceUpdate();

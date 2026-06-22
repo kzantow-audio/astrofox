@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import SectionAddMenu from "./SectionAddMenu";
 
 interface Add2DDisplaysMenuProps {
@@ -6,7 +6,7 @@ interface Add2DDisplaysMenuProps {
 }
 
 export default function Add2DDisplaysMenu({ sceneId }: Add2DDisplaysMenuProps) {
-	const t = useTranslations("addMenu");
+	const { t } = useTranslation(undefined, { keyPrefix: "addMenu" });
 
 	const categories = [
 		{

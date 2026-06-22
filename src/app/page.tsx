@@ -1,8 +1,9 @@
 'use client';
 
-import Spinner from '@/app/components/interface/Spinner';
 import dynamic from 'next/dynamic';
-import React, { useEffect, type CSSProperties } from 'react';
+import { type CSSProperties, useEffect } from 'react';
+import Spinner from '@/app/components/interface/Spinner';
+import I18nProvider from '@/i18n/I18nProvider';
 
 const loadingScreenStyle: CSSProperties = {
   position: 'fixed',
@@ -34,5 +35,9 @@ export default function HomePage() {
     });
   }, []);
 
-  return <AstrofoxApp />;
+  return (
+    <I18nProvider>
+      <AstrofoxApp />
+    </I18nProvider>
+  );
 }

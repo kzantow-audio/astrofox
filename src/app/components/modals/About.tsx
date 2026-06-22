@@ -1,7 +1,7 @@
 import { env } from "@/app/global";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React from "react";
 
 const { APP_NAME, APP_VERSION } = env;
@@ -11,8 +11,8 @@ interface AboutProps {
 }
 
 export default function About({ onClose }: AboutProps) {
-	const t = useTranslations("about");
-	const tc = useTranslations("common");
+	const { t } = useTranslation(undefined, { keyPrefix: "about" });
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 
 	return (
 		<div className="flex min-h-[16rem] w-[36rem] max-w-full flex-1 flex-col">

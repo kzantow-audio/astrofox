@@ -1,7 +1,7 @@
 import useError, { clearError } from "@/app/actions/error";
 import Dialog from "@/app/components/window/Dialog";
 import { Warning } from "@/app/icons";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React from "react";
 
 interface ErrorDialogProps {
@@ -9,7 +9,7 @@ interface ErrorDialogProps {
 }
 
 export default function ErrorDialog({ onClose }: ErrorDialogProps) {
-	const tc = useTranslations("common");
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 	const message = useError((state) => state.message);
 
 	function handleConfirm() {

@@ -2,20 +2,15 @@ import { fontVariables, inter } from '@/app/fonts';
 import '@/app/tailwind.css';
 import '@/app/styles/index.css';
 import Script from 'next/script';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
 import type React from 'react';
 
 export const metadata = {
   title: 'Astrofox',
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={locale}>
+    <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
@@ -31,9 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         ) : null}
       </head>
-      <body className={`${fontVariables} ${inter.className}`}>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-      </body>
+      <body className={`${fontVariables} ${inter.className}`}>{children}</body>
     </html>
   );
 }

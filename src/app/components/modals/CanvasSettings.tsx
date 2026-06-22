@@ -3,7 +3,7 @@ import useStage, { updateCanvas } from "@/app/actions/stage";
 import { Setting, Settings } from "@/app/components/controls";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 
 type CanvasSettingsProps = {
@@ -83,8 +83,8 @@ function getCanvasDimensions(
 }
 
 export default function CanvasSettings({ onClose }: CanvasSettingsProps) {
-	const t = useTranslations("canvasSettings");
-	const tc = useTranslations("common");
+	const { t } = useTranslation(undefined, { keyPrefix: "canvasSettings" });
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 
 	const aspectOptions: AspectOption[] = [
 		{ label: t("square"), value: "1:1", widthRatio: 1, heightRatio: 1 },

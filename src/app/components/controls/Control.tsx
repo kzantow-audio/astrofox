@@ -1,10 +1,16 @@
 import Option from "@/app/components/controls/Option";
 import useEntity from "@/app/hooks/useEntity";
+import {
+	translateControlProps,
+	translateGeneratedName,
+	translateLabel,
+} from "@/i18n/labels";
 import type Display from "@/lib/core/Display";
 import { resolve } from "@/lib/utils/object";
 import { inputValueToProps } from "@/lib/utils/react";
 import classNames from "classnames";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface ControlProps {
 	display: Display & {
@@ -33,6 +39,7 @@ export default function Control({
 	onChange: onChangeProp,
 	onNameClick,
 }: ControlProps) {
+	const { t } = useTranslation();
 	const {
 		id,
 		displayName,
@@ -55,13 +62,16 @@ export default function Control({
 			return null;
 		}
 
+		const translatedProps = translateControlProps(t, props);
+
 		return {
 			name,
 			group:
-				typeof props.group === "string" && props.group.trim().length > 0
-					? props.group
+				typeof translatedProps.group === "string" &&
+				translatedProps.group.trim().length > 0
+					? translatedProps.group
 					: null,
-			props,
+			props: translatedProps,
 		};
 	}
 
@@ -126,7 +136,7 @@ export default function Control({
 										: "transparent",
 								}}
 							>
-								{label}
+								{translateLabel(t, label)}
 							</div>
 						</div>
 						<button
@@ -140,7 +150,7 @@ export default function Control({
 							)}
 							onClick={() => onNameClick?.(id)}
 						>
-							{displayName}
+							{translateGeneratedName(t, displayName)}
 						</button>
 					</div>
 				</div>

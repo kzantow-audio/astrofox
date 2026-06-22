@@ -10,12 +10,12 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import classNames from "classnames";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export default function PlayButtons() {
-	const t = useTranslations("player");
+	const { t } = useTranslation(undefined, { keyPrefix: "player" });
 	const forceUpdate = useForceUpdate();
 	const isVideoRecording = useAppStore((state) => state.isVideoRecording);
 	const { liveModeEnabled, mode } = useAudioStore(

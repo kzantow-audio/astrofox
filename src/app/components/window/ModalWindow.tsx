@@ -3,10 +3,12 @@ import { DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type React from "react";
 import { Children, cloneElement, isValidElement } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ModalWindowProps {
 	className?: string;
 	title?: string;
+	titleKey?: string;
 	buttons?: string[];
 	showCloseButton?: boolean;
 	onClose?: (value?: string) => void;
@@ -16,11 +18,15 @@ interface ModalWindowProps {
 export default function ModalWindow({
 	className,
 	title,
+	titleKey,
 	buttons,
 	showCloseButton: _showCloseButton = true,
 	onClose,
 	children,
 }: ModalWindowProps) {
+	const { t } = useTranslation();
+	const resolvedTitle = titleKey ? t(titleKey) : title;
+
 	return (
 		<div
 			className={cn(
@@ -28,10 +34,10 @@ export default function ModalWindow({
 				className,
 			)}
 		>
-			{title && (
+			{resolvedTitle && (
 				<div className="shrink-0 bg-neutral-800 px-4 py-2.5 text-center">
 					<DialogTitle className="cursor-default text-sm uppercase tracking-wider text-neutral-100">
-						{title}
+						{resolvedTitle}
 					</DialogTitle>
 				</div>
 			)}

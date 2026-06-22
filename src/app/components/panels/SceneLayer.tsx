@@ -3,12 +3,14 @@ import Add3DDisplaysMenu from "@/app/components/panels/Add3DDisplaysMenu";
 import AddEffectsMenu from "@/app/components/panels/AddEffectsMenu";
 import Layer from "@/app/components/panels/Layer";
 import { Cube, Picture, Square, Sun } from "@/app/icons";
+import { translateGeneratedName, translateLabel } from "@/i18n/labels";
 import { reverse } from "@/lib/utils/array";
 import { getDisplayRenderGroup } from "@/lib/utils/displayRenderGroup";
 import classNames from "classnames";
 import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 const icons: Record<string, LucideIcon> = {
 	effect: Sun,
@@ -68,6 +70,7 @@ export default function SceneLayer({
 	onLayerDrop,
 	onLayerDragEnd,
 }: SceneLayerProps) {
+	const { t } = useTranslation();
 	const { id, displayName, enabled } = scene;
 	const sceneDragging = dragSourceId === id;
 	const sceneDragOver = dragOverId === id;
@@ -103,6 +106,7 @@ export default function SceneLayer({
 			key={id}
 			id={id}
 			name={displayName}
+			displayName={translateGeneratedName(t, displayName)}
 			icon={resolveLayerIcon({ id, type, name, displayName, enabled })}
 			className={"rounded ml-4"}
 			enabled={enabled}
@@ -128,7 +132,7 @@ export default function SceneLayer({
 	) => (
 		<div className="flex flex-col gap-0.5">
 			<div className="ml-4 px-2 pt-1.5 pb-0.5 text-[10px] font-semibold uppercase text-neutral-400">
-				{title}
+				{translateLabel(t, title)}
 			</div>
 			{layers.length > 0
 				? layers.map((layer: SceneElement) => renderLayer(layer))
@@ -186,6 +190,7 @@ export default function SceneLayer({
 				key={id}
 				id={id}
 				name={displayName}
+				displayName={translateGeneratedName(t, displayName)}
 				icon={Picture}
 				enabled={enabled}
 				active={id === activeElementId}

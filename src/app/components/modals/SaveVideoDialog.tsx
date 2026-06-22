@@ -13,7 +13,7 @@ import ExportWaveform from "@/app/components/modals/ExportWaveform";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef, useState } from "react";
 
 type SaveVideoDialogProps = {
@@ -47,8 +47,8 @@ export default function SaveVideoDialog({
 	endTime = initialTotalDuration,
 	includeAudio = true,
 }: SaveVideoDialogProps) {
-	const t = useTranslations("saveVideo");
-	const tc = useTranslations("common");
+	const { t } = useTranslation(undefined, { keyPrefix: "saveVideo" });
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 	const [fileHandle, setFileHandle] = useState(initialFileHandle);
 	const [filePath, setFilePath] = useState(initialFilePath);
 	const [audioSource, setAudioSource] = useState<File | null>(

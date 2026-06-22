@@ -6,13 +6,13 @@ import useAudioStore, {
 import { player } from "@/app/global";
 import useForceUpdate from "@/app/hooks/useForceUpdate";
 import classNames from "classnames";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { Mic, Monitor } from "lucide-react";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export default function LiveInputButton() {
-	const t = useTranslations("player");
+	const { t } = useTranslation(undefined, { keyPrefix: "player" });
 	const forceUpdate = useForceUpdate();
 	const { liveInputMode, loading, microphoneDevices, desktopAudioSupported } =
 		useAudioStore(

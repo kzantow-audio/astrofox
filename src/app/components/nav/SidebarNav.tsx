@@ -17,7 +17,7 @@ import {
 	Settings2,
 	Video,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React from "react";
 
 type MenuAction =
@@ -90,7 +90,7 @@ function getSidebarSections(): SidebarItem[][] {
 }
 
 export default function SidebarNav() {
-	const t = useTranslations("menu");
+	const { t } = useTranslation(undefined, { keyPrefix: "menu" });
 	const sections = getSidebarSections();
 
 	return (

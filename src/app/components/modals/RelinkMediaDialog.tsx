@@ -4,7 +4,7 @@ import useProject, {
 } from "@/app/actions/project";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 
 interface RelinkMediaDialogProps {
@@ -12,8 +12,8 @@ interface RelinkMediaDialogProps {
 }
 
 export default function RelinkMediaDialog({ onClose }: RelinkMediaDialogProps) {
-	const t = useTranslations("relinkMedia");
-	const tc = useTranslations("common");
+	const { t } = useTranslation(undefined, { keyPrefix: "relinkMedia" });
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 	const mediaRefs = useProject(
 		(state) => state.unresolvedMediaRefs,
 	) as MediaRef[];

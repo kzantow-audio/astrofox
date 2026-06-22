@@ -9,7 +9,7 @@ import useProject, {
 } from "@/app/actions/project";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -23,8 +23,8 @@ interface ProjectBrowserProps {
 }
 
 export default function ProjectBrowser({ onClose }: ProjectBrowserProps) {
-	const t = useTranslations("projectBrowser");
-	const tc = useTranslations("common");
+	const { t } = useTranslation(undefined, { keyPrefix: "projectBrowser" });
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 	const currentProjectId = useProject((state) => state.projectId);
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [loading, setLoading] = useState(false);

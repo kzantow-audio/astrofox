@@ -4,7 +4,7 @@ import useProject, {
 	saveProject,
 } from "@/app/actions/project";
 import Dialog from "@/app/components/window/Dialog";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React from "react";
 
 interface UnsavedChangesDialogProps {
@@ -16,8 +16,8 @@ export default function UnsavedChangesDialog({
 	action,
 	onClose,
 }: UnsavedChangesDialogProps) {
-	const t = useTranslations("unsavedChanges");
-	const tc = useTranslations("common");
+	const { t } = useTranslation(undefined, { keyPrefix: "unsavedChanges" });
+	const { t: tc } = useTranslation(undefined, { keyPrefix: "common" });
 	const project = useProject((state) => state);
 
 	async function handleAction(actionType: string) {

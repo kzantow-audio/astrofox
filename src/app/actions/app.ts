@@ -727,7 +727,7 @@ export async function handleMenuAction(action: string) {
 
 		case "edit-canvas":
 			await showModal("CanvasSettings", {
-				title: "Project settings",
+				titleKey: "menu.projectSettings",
 				showCloseButton: false,
 			});
 			break;

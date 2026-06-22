@@ -17,10 +17,10 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 
 export default function LeftPanel() {
-	const t = useTranslations("panels");
+	const { t } = useTranslation(undefined, { keyPrefix: "panels" });
 
 	async function handleAddScene() {
 		const scene = await addScene();

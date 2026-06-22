@@ -8,11 +8,11 @@ import useAudioStore, {
 	setLiveInputMode,
 } from "@/app/actions/audio";
 import SelectInput from "@/app/components/inputs/SelectInput";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 
 export default function LiveModePanel() {
-	const t = useTranslations("liveMode");
+	const { t } = useTranslation(undefined, { keyPrefix: "liveMode" });
 	const {
 		loading,
 		liveInputMode,

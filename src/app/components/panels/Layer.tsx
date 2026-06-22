@@ -8,6 +8,7 @@ import { useState } from "react";
 interface LayerProps {
 	id: string;
 	name?: string;
+	displayName?: React.ReactNode;
 	icon?: LucideIcon | null;
 	className?: string;
 	active?: boolean;
@@ -26,6 +27,7 @@ interface LayerProps {
 export default function Layer({
 	id,
 	name = "",
+	displayName,
 	icon = null,
 	className,
 	active = false,
@@ -86,10 +88,6 @@ export default function Layer({
 		setEdit(true);
 	}
 
-	function handleCancelEdit() {
-		setEdit(false);
-	}
-
 	function handleDeleteClick(e: React.MouseEvent) {
 		e.stopPropagation();
 		if (onLayerDelete) {
@@ -140,7 +138,7 @@ export default function Layer({
 						onChange={handleNameChange}
 					/>
 				) : (
-					name
+					displayName ?? name
 				)}
 			</div>
 			{onLayerDelete && (

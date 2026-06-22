@@ -20,7 +20,7 @@ import {
 import CanvasBars from "@/lib/canvas/CanvasBars";
 import CanvasMeter from "@/lib/canvas/CanvasMeter";
 import { inputValueToProps } from "@/lib/utils/react";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef } from "react";
 
 const SPECTRUM_WIDTH = REACTOR_BARS * (REACTOR_BAR_WIDTH + REACTOR_BAR_SPACING);
@@ -79,7 +79,7 @@ interface ReactorControlProps {
 }
 
 const ReactorControl = ({ reactor }: ReactorControlProps) => {
-	const t = useTranslations("reactorPanel");
+	const { t } = useTranslation(undefined, { keyPrefix: "reactorPanel" });
 	const spectrum = useRef<CanvasBars | null>(null);
 	const meter = useRef<CanvasMeter | null>(null);
 	const spectrumCanvas = useRef<HTMLCanvasElement>(null);
